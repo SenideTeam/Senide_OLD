@@ -1,0 +1,16 @@
+<odoo>
+    <data>
+        <!-- Definimos una categoría de seguridad para el módulo -->
+        <record model="ir.module.category" id="senide.module_category_senide">
+            <field name="name">Senide</field>
+            <field name="description">Sistema de gestión de información de Senide</field>
+            <field name="sequence">100</field>
+        </record>
+
+        <record model="res.groups" id="group_senide_admin">
+            <field name="name">Admin</field>
+            <field name="category_id" ref="senide.module_category_senide"/>
+            <field name="comment">Personas que tienen acceso a la BBDD de Senide</field>
+        </record>
+    </data>
+</odoo>
