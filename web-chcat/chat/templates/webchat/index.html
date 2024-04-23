@@ -1,66 +1,86 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-    <head>
-        <title>Chat Web</title>
-        <!-- Required meta tags -->
-        <meta charset="utf-8" />
-        <meta
-            name="viewport"
-            content="width=device-width, initial-scale=1, shrink-to-fit=no"
-        />
+<head>
+    <meta charset="UTF-8">
+    <title>Audio Recorder</title>
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container mt-5">
+        <h1>Record Audio</h1>
+        <button id="recordButton" class="btn btn-primary">Start Recording</button>
+    </div>
 
-        <!-- Bootstrap CSS v5.2.1 -->
-        <link
-            href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
-            rel="stylesheet"
-            integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN"
-            crossorigin="anonymous"
-        />
-    </head>
+    <script>
+        let mediaRecorder;
+        let audioChunks = [];
 
-    <body>
-        <header>
-            <!-- place navbar here -->
-        </header>
-        <main>
-            <div class="container py-5">
-                <div class="row">
-                    <div class="col-md-6 offset-md-3">
-                        <div class="bg-light border rounded-3">
-                            <div class="p-3 border-bottom">
-                                <h4 class="text-secondary">Chat</h4>
-                            </div>
-                            <div class="p-3" style="height: 300px; overflow-y: auto;">
-                                <!-- Aquí se añadirán los mensajes del chat -->
-                                
-                            </div>
-                            <div class="p-3 border-top">
-                                <form method="post" action="/store" enctype="multipart/form-data">
-                                    <div class="input-group">
-                                        <input type="text" class="form-control" name="txtMensaje" id="txtMensaje" placeholder="Escribe un mensaje...">
-                                        <button class="btn btn-primary" type="submit">Enviar</button>
-                                    </div>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </main>
-        <footer>
-            <!-- place footer here -->
-        </footer>
-        <!-- Bootstrap JavaScript Libraries -->
-        <script
-            src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"
-            integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r"
-            crossorigin="anonymous"
-        ></script>
+        document.getElementById('recordButton').addEventListener('click', () => {
+            const recordButton = document.getElementById('recordButton');
+            if (mediaRecorder && mediaRecorder.state === "recording") {
+                mediaRecorder.stop();
+                recordButton.textContent = "Start Recording";
+                recordButton.classList.toggle('btn-danger');
+                recordButton.classList.toggle('btn-primary');
+            } else {
+                navigator.mediaDevices.getUserMedia({ audio: true })
+                    .then(stream => {
+                        mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
+                        if (!MediaRecorder.isTypeSupported('audio/webm')) {
+                            console.error('audio/webm not supported');
+                            return;
+                        }
+                        mediaRecorder.start();
+                        recordButton.textContent = "Stop Recording";
+                        recordButton.classList.toggle('btn-primary');
+                        recordButton.classList.toggle('btn-danger');
 
-        <script
-            src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.min.js"
-            integrity="sha384-BBtl+eGJRgqQAUMxJ7pMwbEyER4l1g+O15P+16Ep7Q9Q+zqX6gSbd85u4mG4QzX+"
-            crossorigin="anonymous"
-        ></script>
-    </body>
+                        audioChunks = [];
+                        mediaRecorder.ondataavailable = e => {
+                            console.log('Audio chunk size:', e.data.size);
+                            audioChunks.push(e.data);
+                        };
+                        mediaRecorder.onstop = () => {
+                            const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                            console.log('Audio Blob size:', audioBlob.size);
+                            if (audioBlob.size > 0) {
+                                sendAudioToServer(audioBlob);
+                            } else {
+                                console.error('No data to send.');
+                            }
+                        };
+                    }).catch(error => console.error("Error accessing media devices.", error));
+            }
+        });
+
+        function sendAudioToServer(audioBlob) {
+            const formData = new FormData();
+            formData.append('audio', audioBlob, 'filename.webm');
+    
+            fetch('/upload_audio', {
+                method: 'POST',
+                body: formData,
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log("Received response:", data);
+                if (data.llama_response) {
+                    console.log("Llama says:", data.llama_response);
+                    speak(data.llama_response);  // Use the speak function here
+                }
+            })
+            .catch(error => console.error('Error uploading the audio:', error));
+        }
+    
+        function speak(text) {
+            if (!window.speechSynthesis) {
+                console.log('Text-to-speech not supported.');
+                return;
+            }
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.voice = speechSynthesis.getVoices().find(voice => voice.lang === 'es-ES' || voice.lang.startsWith('es'));
+            speechSynthesis.speak(utterance);
+        }
+    </script>
+</body>
 </html>

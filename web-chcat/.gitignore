@@ -138,3 +138,7 @@ cython_debug/
 
 # Visual Studio Code
 .vscode/
+# Audio files to ignore
+*.wav
+*.webm
+

@@ -1,6 +1,13 @@
 import os
 from flask import Flask, render_template, request
 from openai import OpenAI
+from llamaapi import LlamaAPI # type: ignore
+import speech_recognition as sr
+import time
+
+
+
+llama = LlamaAPI("LL-UHp8T1ChDqZdLKMDXPlgWyKaGkzQ8Y32zc55lmE6ZwF62lko1TeRmQVxFKw6LgKS")
 
 app = Flask(__name__)
 
@@ -10,32 +17,25 @@ def index():
 
 @app.route('/store', methods=['POST']) 
 def storage():
-    __mensaje = request.form['txtMensaje']
+    recognizer = sr.Recognizer()
     
-    #client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
-    client = OpenAI(api_key="sk-proj-oxeV4wnhzXFDRuqGJ8QqT3BlbkFJHlZG2iFGl0EWXVNXLDUL")
-
-    try:
-        completion = client.chat.completions.create(
-            model="gpt-3.5-turbo",
-            messages=[
-                {"role": "system", "content": "You are a poetic assistant, skilled in explaining complex programming concepts with creative flair."},
-                {"role": "user", "content": "Compose a poem that explains the concept of recursion in programming."}
-            ]
-        )
-
-        # Asegúrate de que 'completion' tiene una respuesta y accede a ella correctamente
-        if completion.choices:
-            respuesta = completion.choices[0].message.content
-            print(respuesta)
-        else:
-            respuesta = "No response received."
-    except Exception as e:
-        print(f"Error al obtener la respuesta de OpenAI: {e}")
-        respuesta = "Error al procesar la solicitud."
-
-    print(__mensaje)
-    return render_template('webchat/index.html', respuesta=respuesta)
+    
+    
+    user_input = request.form['txtMensaje']
+    
+    api_request_json = {
+        "messages": [
+            {"role": "user", "content": user_input},
+        ]
+    }
+    
+    
+    response = llama.run(api_request_json)
+    
+    
+    assistant_response = response.json()['choices'][0]['message']['content']
+    print("Llama: " + assistant_response)
+    return render_template('webchat/index.html')
 
 if __name__ == '__main__':
     app.run(debug=True)
