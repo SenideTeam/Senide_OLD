@@ -5,10 +5,18 @@ import os
 from datetime import datetime
 from flask_cors import CORS
 from llamaapi import LlamaAPI
+import logging
 
 app = Flask(__name__)
 CORS(app)
 llama = LlamaAPI("LL-UHp8T1ChDqZdLKMDXPlgWyKaGkzQ8Y32zc55lmE6ZwF62lko1TeRmQVxFKw6LgKS")
+
+# Configura el logging
+logging.basicConfig(level=logging.INFO)
+
+def allowed_file(filename):
+    """ Check if the file is in allowed format """
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in {'webm'}
 
 @app.route('/')
 def index():
@@ -16,8 +24,8 @@ def index():
 
 @app.route('/upload_audio', methods=['POST'])
 def upload_audio():
-    print("Request received with files:", request.files)
-    if 'audio' in request.files:
+    logging.info("Request received with files: %s", request.files)
+    if 'audio' in request.files and allowed_file(request.files['audio'].filename):
         audio_file = request.files['audio']
         directory = os.path.join(os.path.dirname(__file__), "audio")
         os.makedirs(directory, exist_ok=True)
@@ -30,12 +38,12 @@ def upload_audio():
         converted_path = os.path.join(directory, converted_filename)
 
         audio_file.save(original_path)
-        print("Original audio file saved at:", original_path)
+        logging.info("Original audio file saved at: %s", original_path)
 
         result = subprocess.run(['ffmpeg', '-i', original_path, '-ar', '16000', '-ac', '1', converted_path], capture_output=True, text=True)
-
-        if result.returncode != 0 or not os.path.exists(converted_path):
-            return jsonify({'error': 'Failed to convert the audio'}), 500
+        if result.returncode != 0:
+            logging.error("FFmpeg error: %s", result.stderr)
+            return jsonify({'error': 'Failed to convert the audio', 'ffmpeg_error': result.stderr}), 500
 
         with sr.AudioFile(converted_path) as source:
             recognizer = sr.Recognizer()
@@ -48,14 +56,19 @@ def upload_audio():
                     ]
                 }
                 response = llama.run(api_request_json)
-                assistant_response = response.json()['choices'][0]['message']['content']
-                return jsonify({'text': text, 'llama_response': assistant_response}), 200
+                if response.status_code == 200:
+                    assistant_response = response.json()['choices'][0]['message']['content']
+                    return jsonify({'text': text, 'llama_response': assistant_response}), 200
+                else:
+                    logging.error("LlamaAPI error: %s", response.text)
+                    return jsonify({'error': 'LlamaAPI error', 'details': response.text}), response.status_code
             except sr.UnknownValueError:
-                return jsonify({'error': 'Could not understand audio'}), 422
+                return jsonify({'error': 'Could not understand audio', 'details': 'No speech could be recognized'}), 422
             except sr.RequestError as e:
-                return jsonify({'error': str(e)}), 503
+                return jsonify({'error': 'Speech recognition service error', 'details': str(e)}), 503
     else:
-        return jsonify({'error': 'No audio file provided'}), 400
+        logging.error("No valid audio file provided or file format not supported.")
+        return jsonify({'error': 'No valid audio file provided or file format not supported'}), 400
 
 if __name__ == '__main__':
     app.run(debug=True)
