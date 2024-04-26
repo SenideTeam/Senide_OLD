@@ -21,6 +21,7 @@
         let lastTimeAboveThreshold = Date.now();
         const silenceThreshold = 0.1; // Umbral de silencio
         const silenceTime = 1500; // Tiempo en ms para considerar que el silencio significa fin de habla
+        let isSpeaking = false; // Estado de la reproducción de voz
 
         document.getElementById('recordButton').addEventListener('click', () => {
             const recordButton = document.getElementById('recordButton');
@@ -62,6 +63,7 @@
         });
 
         function checkAudio() {
+            if (isSpeaking) return; // No iniciar la grabación si se está hablando
             const bufferLength = realTimeAnalyser.frequencyBinCount;
             const dataArray = new Uint8Array(bufferLength);
             realTimeAnalyser.getByteTimeDomainData(dataArray);
@@ -73,7 +75,7 @@
             }
             const rms = Math.sqrt(sum / bufferLength);
         
-            if (rms > silenceThreshold) {
+            if (rms > silenceThreshold && !isSpeaking) {
                 lastTimeAboveThreshold = Date.now();
                 if (!isRecording) {
                     isRecording = true;
@@ -125,6 +127,8 @@
                 return;
             }
             const utterance = new SpeechSynthesisUtterance(text);
+            utterance.onstart = () => { isSpeaking = true; };
+            utterance.onend = () => { isSpeaking = false; checkAudio(); }; // Reanudar la comprobación del audio al finalizar la voz
             utterance.voice = speechSynthesis.getVoices().find(voice => voice.lang === 'es-ES' || voice.lang.startsWith('es'));
             speechSynthesis.speak(utterance);
         }
