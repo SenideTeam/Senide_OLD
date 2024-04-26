@@ -14,9 +14,27 @@ llama = LlamaAPI("LL-UHp8T1ChDqZdLKMDXPlgWyKaGkzQ8Y32zc55lmE6ZwF62lko1TeRmQVxFKw
 # Configura el logging
 logging.basicConfig(level=logging.INFO)
 
-def allowed_file(filename):
-    """ Check if the file is in allowed format """
-    return '.' in filename and filename.rsplit('.', 1)[1].lower() in {'webm'}
+# Contexto inicial con marcadores para formato
+context_initial = """
+Después de este mensaje ya, quiero que interactúes en base al siguiente contexto:
+Eres una IA centrada en el cuidado de personas mayores o con algún tipo de problema cognitivo, por 
+lo que tienes que hablar en un tono familiar y cuidadoso. En caso de que detectes una situación en la
+que consideres necesario llamar a los servicios de emergencia, solo di 'ALERTA'. 
+Dentro de este contexto, tienes que meterte en el siguiente papel: El paciente se llama {0} sufre de {1},
+y tú eres su {2} llamado {3}.
+"""
+
+# Variables para personalizar el contexto
+nombre_paciente = "Juanito"
+problema = "Demencia senil"
+relacion_cuidador = "hija"
+nombre_cuidador = "Maria"
+
+# Inicializa el contexto con las variables
+initial_context = context_initial.format(nombre_paciente, problema, relacion_cuidador, nombre_cuidador)
+
+# Contexto que evoluciona con cada respuesta
+dynamic_context = initial_context
 
 @app.route('/')
 def index():
@@ -25,7 +43,7 @@ def index():
 @app.route('/upload_audio', methods=['POST'])
 def upload_audio():
     logging.info("Request received with files: %s", request.files)
-    if 'audio' in request.files and allowed_file(request.files['audio'].filename):
+    if 'audio' in request.files:
         audio_file = request.files['audio']
         directory = os.path.join(os.path.dirname(__file__), "audio")
         os.makedirs(directory, exist_ok=True)
@@ -50,14 +68,18 @@ def upload_audio():
             audio_data = recognizer.record(source)
             try:
                 text = recognizer.recognize_google(audio_data, language='es-ES')
+                global dynamic_context  # Referencia al contexto global que evoluciona
+                updated_context = f"{dynamic_context}\n\nÚltima interacción: {text}"
                 api_request_json = {
                     "messages": [
                         {"role": "user", "content": text},
+                        {"role": "system", "content": updated_context}
                     ]
                 }
                 response = llama.run(api_request_json)
                 if response.status_code == 200:
                     assistant_response = response.json()['choices'][0]['message']['content']
+                    dynamic_context += f"\n\nRespuesta de Llama: {assistant_response}"  # Actualiza el contexto con la respuesta de Llama
                     return jsonify({'text': text, 'llama_response': assistant_response}), 200
                 else:
                     logging.error("LlamaAPI error: %s", response.text)
