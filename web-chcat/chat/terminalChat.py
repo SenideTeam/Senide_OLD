@@ -2,10 +2,8 @@ import pyaudio
 import numpy as np
 import speech_recognition as sr
 from llamaapi import LlamaAPI
-import pyttsx3  # Importar la biblioteca de texto a voz
-
-
-#Este programa usa el micrófono y escucha lo que se dice para convertirlo en texto, pasarlo a la llama , por último, lo convierte a voz.
+import pyttsx3
+from guardar_respuesta import guardar
 
 # Configuración de PyAudio
 FORMAT = pyaudio.paInt16
@@ -70,7 +68,10 @@ while True:
             response = llama.run(api_request_json)
             assistant_response = response.json()['choices'][0]['message']['content']
             print("Llama: " + assistant_response)
-
+            
+            # Guarda la respuesta
+            guardar(text,assistant_response)
+            
             # Convertir la respuesta en audio y reproducirla
             engine.say(assistant_response)
             engine.runAndWait()
