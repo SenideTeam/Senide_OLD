@@ -1,7 +1,7 @@
 import os
 from datetime import datetime
 
-def guardar(respuesta):
+def guardar(pregunta, respuesta):
     # Obtener la ruta del directorio del script actual
     directorio_actual = os.path.dirname(__file__)
 
@@ -19,11 +19,13 @@ def guardar(respuesta):
     fecha_actual = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 
     # Construir el nombre del archivo con la fecha actual
-    nombre_archivo = f"respuesta_asistente_{fecha_actual}.txt"
+    nombre_archivo = f"conversacion_{fecha_actual}.txt"
 
     # Ruta completa del archivo
     ruta_archivo = os.path.join(ruta_directorio, nombre_archivo)
 
-    # Escribir la respuesta en el archivo
-    with open(ruta_archivo, "w") as file:
-        file.write(respuesta)
+    # Escribir la pregunta y la respuesta en el archivo
+    with open(ruta_archivo, "a") as file:
+        file.write(f"Pregunta: {pregunta}\n")
+        file.write(f"Respuesta: {respuesta}\n")
+        file.write("\n")

@@ -70,7 +70,7 @@ while True:
             print("Llama: " + assistant_response)
             
             # Guarda la respuesta
-            guardar(assistant_response)
+            guardar(text,assistant_response)
             
             # Convertir la respuesta en audio y reproducirla
             engine.say(assistant_response)
