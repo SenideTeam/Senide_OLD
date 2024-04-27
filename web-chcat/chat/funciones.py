@@ -1,0 +1,79 @@
+import subprocess
+import os
+from datetime import datetime
+import speech_recognition as sr
+import logging
+import os
+from datetime import datetime
+
+def guardar(pregunta, respuesta):
+    """
+    Esta función guarda la 'pregunta' y la 'respuesta' en un archivo de texto.
+    Cada conversación se guarda en un nuevo archivo dentro de un directorio específico.
+    Los archivos se nombran con la fecha y hora actual para asegurar la unicidad y seguimiento temporal.
+    """
+    directorio_actual = os.path.dirname(__file__)
+    directorio = "respuestas_asistente"
+    ruta_directorio = os.path.join(directorio_actual, directorio)
+
+    if not os.path.exists(ruta_directorio):
+        os.makedirs(ruta_directorio)
+
+    fecha_actual = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    nombre_archivo = f"conversacion_{fecha_actual}.txt"
+    ruta_archivo = os.path.join(ruta_directorio, nombre_archivo)
+
+    with open(ruta_archivo, "a") as file:
+        file.write(f"Pregunta: {pregunta}\n")
+        file.write(f"Respuesta: {respuesta}\n")
+        file.write("\n")
+        
+
+
+def save_and_convert_audio(audio_file):
+    directory = os.path.join(os.path.dirname(__file__), "audio")
+    os.makedirs(directory, exist_ok=True)
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    original_filename = f"original_audio_{timestamp}.webm"
+    converted_filename = f"converted_audio_{timestamp}.wav"
+    original_path = os.path.join(directory, original_filename)
+    converted_path = os.path.join(directory, converted_filename)
+    audio_file.save(original_path)
+    logging.info("Original audio file saved at: %s", original_path)
+    result = subprocess.run(['ffmpeg', '-i', original_path, '-ar', '16000', '-ac', '1', converted_path], capture_output=True, text=True)
+    if result.returncode != 0:
+        logging.error("FFmpeg error: %s", result.stderr)
+        return None, None
+    return original_path, converted_path
+
+def transcribe_audio(converted_path):
+    with sr.AudioFile(converted_path) as source:
+        recognizer = sr.Recognizer()
+        audio_data = recognizer.record(source)
+        try:
+            text = recognizer.recognize_google(audio_data, language='es-ES')
+            return text, None
+        except sr.UnknownValueError:
+            return None, {'error': 'Could not understand audio', 'details': 'No speech could be recognized', 'status': 422}
+        except sr.RequestError as e:
+            return None, {'error': 'Speech recognition service error', 'details': str(e), 'status': 503}
+
+def process_recognition(text, dynamic_context, llama):
+    updated_context = f"{dynamic_context}\n\nÚltima interacción: {text}"
+    api_request_json = {
+        "messages": [
+            {"role": "user", "content": text},
+            {"role": "system", "content": updated_context}
+        ]
+    }
+    response = llama.run(api_request_json)
+    if response.status_code == 200:
+        assistant_response = response.json()['choices'][0]['message']['content']
+        updated_context += f"\n\nRespuesta de Llama: {assistant_response}"
+        # Asegúrate de devolver un diccionario que contenga tanto el contexto actualizado como la respuesta.
+        return {'response': {'text': text, 'llama_response': assistant_response}, 'updated_context': updated_context}, 200
+    else:
+        logging.error("LlamaAPI error: %s", response.text)
+        return {'response': {'error': 'LlamaAPI error', 'details': response.text}, 'status_code': response.status_code}
+
+
