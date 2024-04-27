@@ -1,4 +1,5 @@
-from flask import Flask, render_template, request, jsonify
+from typing import Tuple, Union
+from flask import Response,Flask, render_template, request, jsonify
 from flask_cors import CORS
 from llamaapi import LlamaAPI
 import logging
@@ -28,8 +29,9 @@ dynamic_context = initial_context
 def index():
     return render_template('webchat/index.html')
 
+
 @app.route('/upload_audio', methods=['POST'])
-def upload_audio():
+def upload_audio() -> Union[Response, Tuple[Response, int]]:
     global dynamic_context  # Make sure to reference the global variable
     logging.info("Request received with files: %s", request.files)
     if 'audio' not in request.files:
@@ -37,24 +39,24 @@ def upload_audio():
         return jsonify({'error': 'No valid audio file provided or file format not supported'}), 400
 
     audio_file = request.files['audio']
-    # Modifica esta línea para usar el prefijo del módulo
     original_path, converted_path = funciones.save_and_convert_audio(audio_file)
 
     if original_path is None or converted_path is None:
         return jsonify({'error': 'Failed to convert the audio'}), 500
 
-    # Modifica esta línea para usar el prefijo del módulo
     text, error_details = funciones.transcribe_audio(converted_path)
     if text is None:
-        return jsonify(error_details), error_details['status']
+        if error_details and isinstance(error_details, dict):
+            return jsonify(error_details), error_details.get('status', 500)
+        else:
+            return jsonify({'error': 'Error processing audio'}), 500
 
-    # Modifica esta línea para usar el prefijo del módulo
     result, status = funciones.process_recognition(text, dynamic_context, llama)
     if status == 200:
         dynamic_context = result['updated_context']  # Update the global dynamic context
-        return jsonify(result['response']), status
+        return jsonify(result['response']), 200
     else:
-        return jsonify(result['response']), result['status_code']
+        return jsonify(result['response']), result.get('status_code', 500)
 
 
 
