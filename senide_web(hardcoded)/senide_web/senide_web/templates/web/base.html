@@ -1,0 +1,116 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Senide</title>
+    <!-- Enlace al CSS de Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Enlace a tu archivo CSS personalizado -->
+    <link href="{% static 'css/styles.css' %}" rel="stylesheet">
+</head>
+<body>
+    {% if usuario %}
+        <!--NAVBAR LOGEADO-->
+        <nav class="navbar navbar-expand-lg navbar-light fixed-top">
+            <div class="container-fluid">
+                <a class="navbar-brand" href="{% url 'home' %}">
+                    SENIDE
+                </a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse justify-content-end" id="navbarNavAltMarkup">
+                    <div class="navbar-nav">
+                        <a class="nav-link d-lg-none" href="{% url 'perfil' usuario%}">Perfil</a> <!-- Visible solo en pantallas pequeñas -->
+                        <a class="nav-link d-lg-none" href="{% url 'transcripciones' usuario %}">Transcripciones</a> <!-- Visible solo en pantallas pequeñas -->
+                        <a class="nav-link d-lg-none" href="{% url 'estadisticas' usuario %}">Estadísticas</a> <!-- Visible solo en pantallas pequeñas -->
+                        <a class="nav-link d-lg-none text-danger" href="{% url 'home' %}">Cerrar sesión</a> <!-- Visible solo en pantallas pequeñas -->
+                        <a class="nav-link d-none d-lg-inline btn btn-outline-primary me-2" href="{% url 'transcripciones' usuario %}">Transcripciones</a> <!-- Visible en pantallas grandes -->
+                        <a class="nav-link d-none d-lg-inline btn btn-outline-primary me-2" href="{% url 'estadisticas' usuario %}">Estadísticas</a> <!-- Visible en pantallas grandes -->
+                        <div class="nav-item dropdown d-none d-lg-block container-fluid"> <!-- Visible en pantallas grandes -->
+                            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownProfileLink" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <img src="{% static 'images/profile.png' %}" alt="Perfil" style="height: 30px;">
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdownProfileLink">
+                                <li><a class="dropdown-item" href="{% url 'perfil' usuario%}">Perfil</a></li>
+                                <li><a class="dropdown-item text-danger" href="{% url 'home' %}">Cerrar sesión</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </nav>
+    {% else %}
+        <!--NAVBAR SIN LOGEAR -->
+        <nav class="navbar navbar-expand-lg navbar-light fixed-top">
+            <div class="container-fluid">
+                <a class="navbar-brand" href="{% url 'home' %}">
+                    SENIDE
+                </a>
+                <button type="button" class="btn btn-outline-dark" data-bs-toggle="modal" data-bs-target="#loginModal">
+                    Iniciar sesión
+                </button>
+            </div>
+        </nav>
+
+        <!-- Modal de Inicio de Sesión -->
+        <div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                <h5 class="modal-title" id="loginModalLabel">Inicio de Sesión</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                <!-- Formulario de Inicio de Sesión -->
+                <form method="post" action="{% url 'home' %}">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                    <label for="username" class="col-form-label">Usuario:</label>
+                    <input type="text" class="form-control" id="username" name="username" required>
+                    </div>
+                    <div class="mb-3">
+                    <label for="password" class="col-form-label">Contraseña:</label>
+                    <input type="password" class="form-control" id="password" name="password" required>
+                    </div>
+                    <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Aceptar</button>
+                    </div>
+                </form>
+                </div>
+            </div>
+            </div>
+        </div>
+    {% endif %}
+
+    {% block content %}
+    {% endblock %}
+    
+    <!-- Enlace a JavaScript de Bootstrap -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        window.addEventListener('scroll', function() {
+            var navbar = document.querySelector('.navbar');
+            if (window.scrollY > 50) { // Ajusta '50' al punto exacto donde quieres que cambie
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('scrolled');
+            }
+        });
+    </script>
+</body>
+
+<!-- Footer section -->
+<footer class="footer-section text-center">
+    <p><b>Contacta con nosotros</b></p>
+    <div class="social-icons">
+        <a href="link-a-tu-red-social-o-contacto1"><img src="{% static 'images/phoneIcon.png' %}"></a>
+        <a href="link-a-tu-red-social-o-contacto2"><img src="{% static 'images/correoIcon.png' %}"></a>
+    </div>
+</footer>
+
+</html>

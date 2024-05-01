@@ -1,0 +1,104 @@
+{% extends "web/base.html" %}
+{% load static %}
+{% block content %}
+
+<div class="hero-section">
+    <div class="hero-content container-fluid col-md-4">
+        <b>
+        <h1>SENIDE</h1>
+        <p>Una solución que fusiona las nuevas tecnologías con la sanidad</p>
+        </b>
+        <a href="#mas-info" class="scroll-down">
+            <img id="arrowDown" src="{% static 'images/arrowDown.png' %}">
+        </a>
+    </div>
+</div>
+
+<div id="mas-info" class="container my-5">
+    <!-- Sección de pregunta y respuesta -->
+    <div class="row">
+        <div class="col-md-6">
+            <h2 class="question">¿Cómo<br>funciona?</h2>
+        </div>
+        <div class="col-md-6">
+            <p class="answer">Senide es un servicio de asistencia para personas mayores y/o con problemas cognitivos.<br><br>
+            Cuando tu familiar, amigo, o cliente en cuestión tenga algún tipo de problema y necesite algún tipo de ayuda, 
+            te intentará llamar, pero no siempre podrás estar disponible para atenderle.<br><br>
+            Ahí es donde entra nuestro chatbot basado en IA. Atenderá a la persona, hará caso a sus necesidades, y aclarará algunas
+            de sus dudas de la manera más clara posible. Además, en caso de que detecte alguna situación de alerta, avisará a los 
+            servicios de emergencia.<br><br>
+            Todo esto, ofreciéndole a los cuidadores una manera sencilla y organizada de modificar la configuración y los datos, y de 
+            poder ver la transcripción y estadísticas de todas la conversaciones con el chatbot.</p>
+        </div>
+    </div>
+
+    <!-- Sección de cita -->
+    <div class="quote-section my-5">
+        <hr class="custom-hr">
+        <br>
+        <p class="quote">"Una solución de inteligencia artificial que implementa las nuevas tecnologías en el mundo del cuidado y la salud."</p>
+        <hr class="custom-hr">
+    </div>
+
+    <!-- Sección de pregunta y respuesta invertida -->
+    <div class="row">
+        <div class="col-md-6 order-md-2">
+            <h2 class="question">¿Quiénes<br>somos?</h2>
+        </div>
+        <div class="col-md-6 order-md-1">
+            <p class="answer">Somos un grupo de 5 jóvenes estudiantes con una gran idea, muchas ganas y la capacidad para llevarla a cabo.<br><br>
+            Cada uno de nosotros tiene diferentes cualidades y conocimientos sobre el mundo de las nuevas tecnologías en general, desde programación, 
+            hasta sistemas infórmatico y redes. Por eso, formamos un grupo que cubre muchos de los ámbitos que se necesitan para sacar adelante 
+            un proyecto de estas características.<br><br>
+            En el último año de la formación en la que nos conocimos y juntamos, tuvimos esta idea, y decidimos trabajar en ella, empezando a 
+            desarrollarla técnicamente, además de buscar los medios necesarios presentándonos a eventos y concursos de jóvenes emprendedores e ideas
+            innovadoras.
+            </p>
+        </div>
+    </div>
+
+    <!-- Sección de Imágenes Circulares -->
+    <div class="row text-center my-5">
+        <div class="col-md-6">
+            <div class="circle-container">
+                <div class="circle-image">
+                    <img src="{% static 'images/trofeo.png' %}">
+                </div>
+                <p class="image-caption">On Ekin<br>2023</p>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="circle-container">
+                <div class="circle-image">
+                    <img src="{% static 'images/trofeo.png' %}">
+                </div>
+                <p class="image-caption">Gipuzkoa Ekin<br>2024</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sección de pregunta y respuesta -->
+    <div class="row">
+        <div class="col-md-6">
+            <h2 class="question">¿Cómo<br>empiezo?</h2>
+        </div>
+        <div class="col-md-6">
+            <p class="answer">Para empezar a integrar este servicio en tu vida y en la de tu ser querido, primero debes crearte una cuenta 
+            para poder configurar tu perfil y definir toda la información necesaria para el correcto funcionamiento del chatbot.<br><br>
+            Una vez hayas creado tu cuenta e iniciado sesión con esas credenciales en la web, tienes que configurar todos los datos necesarios 
+            desde el apartado de "Perfil".<br><br>
+            Por último, deberás de descargar la app móvil e instalarla en el smartphone de tu ser querido, donde iniciarás sesión con la cuenta asociada.<br><br>
+            Hecho esto, solo queda empezar a utilizar el servicio.
+            </p>
+        </div>
+    </div>
+
+    <!-- Sección de imagen central -->
+    <div class="row">
+        <div class="col-md-6 container-fluid">
+            <img src="{% static 'images/img1.webp' %}" alt="Funcionamiento de Senide" class="centered-image">
+        </div>
+    </div>
+</div>
+
+{% endblock %}

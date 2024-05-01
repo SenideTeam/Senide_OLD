@@ -1,0 +1,208 @@
+{% extends "web/base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1>Estadísticas</h1>
+    
+    <!-- Estadísticas: Llamadas Respondidas -->
+    <h2 class="mt-4">Llamadas respondidas</h2>
+    <!-- Pestañas para la vista de tabla y gráfico con clase personalizada -->
+    <ul class="nav nav-tabs estadisticas-tabs" id="myTab" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="tabla-tab" data-bs-toggle="tab" data-bs-target="#tabla" type="button" role="tab" aria-controls="tabla" aria-selected="true">Tabla</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="grafico-tab" data-bs-toggle="tab" data-bs-target="#grafico" type="button" role="tab" aria-controls="grafico" aria-selected="false">Gráfico</button>
+        </li>
+    </ul>
+    <div class="tab-content estadisticas-content" id="myTabContent">
+        <!-- Tabla -->
+        <div class="tab-pane fade show active" id="tabla" role="tabpanel" aria-labelledby="tabla-tab">
+            <table class="table mt-3">
+                <thead>
+                    <tr>
+                        <th scope="col">Tipo</th>
+                        <th scope="col">Cantidad</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Respondidas por un cuidador</td>
+                        <td>52</td>
+                    </tr>
+                    <tr>
+                        <td>Respondidas por el chatbot</td>
+                        <td>74</td>
+                    </tr>
+                    <tr>
+                        <td><b>Llamadas totales</b></td>
+                        <td><b>126</b></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <!-- Gráfico -->
+        <div class="tab-pane fade" id="grafico" role="tabpanel" aria-labelledby="grafico-tab">
+            <div id="chart_div" class="chart-container"></div>
+        </div>
+    </div>
+
+    <!-- Estadísticas: Llamadas en estado de estrés -->
+    <h2 class="mt-4">Llamadas en estado de estrés</h2>
+    <!-- Pestañas para la vista de tabla y gráfico de tarta -->
+    <ul class="nav nav-tabs estadisticas-tabs" id="myTab2" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="tabla-estres-tab" data-bs-toggle="tab" data-bs-target="#tabla-estres" type="button" role="tab" aria-controls="tabla-estres" aria-selected="true">Tabla</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="grafico-estres-tab" data-bs-toggle="tab" data-bs-target="#grafico-estres" type="button" role="tab" aria-controls="grafico-estres" aria-selected="false">Gráfico</button>
+        </li>
+    </ul>
+    <div class="tab-content estadisticas-content" id="myTabContent2">
+        <!-- Tabla -->
+        <div class="tab-pane fade show active" id="tabla-estres" role="tabpanel" aria-labelledby="tabla-estres-tab">
+            <table class="table mt-3">
+                <thead>
+                    <tr>
+                        <th scope="col">Estado</th>
+                        <th scope="col">Cantidad</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Llamadas con estado de estrés</td>
+                        <td>8</td>
+                    </tr>
+                    <tr>
+                        <td>Llamadas normales</td>
+                        <td>66</td>
+                    </tr>
+                    <tr>
+                        <td><b>Total</b></td>
+                        <td><b>74</b></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <!-- Gráfico de tarta -->
+        <div class="tab-pane fade" id="grafico-estres" role="tabpanel" aria-labelledby="grafico-estres-tab">
+            <div id="piechart_div" class="chart-container"></div>
+        </div>
+    </div>
+
+    <!-- Estadísticas: Media de duración -->
+    <h2 class="mt-4">Media de duración de llamadas</h2>
+    <table class="table mt-3">
+        <thead>
+            <tr>
+                <th scope="col">Descripción</th>
+                <th scope="col">Datos</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Duración media de llamada</td>
+                <td>8 minutos 36 segundos</td>
+            </tr>
+            <tr>
+                <td>Cantidad de llamadas</td>
+                <td>126</td>
+            </tr>
+            <tr>
+                <td><b>Tiempo total en llamada</b></td>
+                <td><b>16 horas 19 minutos 2 segundos</b></td>
+            </tr>
+        </tbody>
+    </table>
+    <br><br>
+
+    <!-- Estadísticas: Franja Horaria -->
+    <h2 class="mt-4">Franja horaria</h2>
+    <div id="area_chart_div" class="chart-container"></div>
+</div>
+<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+<script type="text/javascript">
+    google.charts.load('current', {'packages':['bar', 'corechart']});
+    google.charts.setOnLoadCallback(drawAllCharts);
+
+    function drawAllCharts() {
+        drawBarChart();
+        drawPieChart();
+        drawAreaChart();
+    }
+
+    function drawBarChart() {
+        var data = google.visualization.arrayToDataTable([
+            ['Tipo de Llamada', 'Cantidad', { role: 'style' }],
+            ['Cuidador', 52, '#b87333'],
+            ['Chatbot', 74, '#b87333'],
+            ['Total', 126, '#b87333']
+        ]);
+
+        var options = {
+            legend: { position: 'none' },
+            width: chartWidth(),
+            height: 300,
+            vAxis: {
+                gridlines: {
+                    color: 'transparent'
+                }
+            }
+        };
+
+        var chart = new google.charts.Bar(document.getElementById('chart_div'));
+        chart.draw(data, google.charts.Bar.convertOptions(options));
+    }
+
+    function drawPieChart() {
+        var data = google.visualization.arrayToDataTable([
+            ['Estado', 'Cantidad'],
+            ['Estrés', 8],
+            ['Normal', 66]
+        ]);
+
+        var options = {
+            pieHole: 0.4,
+            height: 500,
+            legend: { position: 'none' },
+        };
+
+        var chart = new google.visualization.PieChart(document.getElementById('piechart_div'));
+        chart.draw(data, options);
+    }
+
+    function drawAreaChart() {
+        var data = google.visualization.arrayToDataTable([
+            ['Hora', 'Cantidad'],
+            ['00', 0], ['01', 0], ['02', 1], ['03', 0],
+            ['04', 0], ['05', 0], ['06', 4], ['07', 0],
+            ['08', 10], ['09', 7], ['10', 3], ['11', 17],
+            ['12', 13], ['13', 17], ['14', 5], ['15', 0],
+            ['16', 0], ['17', 15], ['18', 15], ['19', 0],
+            ['20', 0], ['21', 7], ['22', 0], ['23', 0]
+        ]);
+
+        var options = {
+            hAxis: {title: 'Hora del Día',  titleTextStyle: {color: '#333'}},
+            vAxis: {title: 'Cantidad de Llamadas', minValue: 0},
+            height: 500,
+            legend: { position: 'none' },
+            colors: ['#1c91c0'],
+            areaOpacity: 0.4,
+            isStacked: true
+        };
+
+        var chart = new google.visualization.AreaChart(document.getElementById('area_chart_div'));
+        chart.draw(data, options);
+    }
+
+    function chartWidth() {
+        return window.innerWidth > 100 ? window.innerWidth - (0.35*window.innerWidth) : window.innerWidth;
+    }
+
+    window.addEventListener("resize", function(){
+        drawAllCharts(); // Redibuja los gráficos al cambiar el tamaño de la ventana
+    });
+</script>
+{% endblock %}

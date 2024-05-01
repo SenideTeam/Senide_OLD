@@ -1,0 +1,100 @@
+{% extends "web/base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1 style="text-align: left;">Transcripciones</h1>
+    <div class="my-4 col-md-3">
+        <select class="form-select" aria-label="Filtro de transcripciones">
+            <option selected>Todas</option>
+            <option value="1">Hoy</option>
+            <option value="2">Esta semana</option>
+            <option value="3">Este mes</option>
+        </select>
+    </div>
+    
+    <div class="mt-4">
+        <h5 style="font-size: 1.5rem; color: #6c757d;">29/04/2024</h5>
+        <div class="transcripcion-container col-md-8">
+            <div class="transcription-session" style="cursor: pointer;" onclick="toggleTranscription(this)">
+                <strong>17:04 - 17:12</strong>
+            </div>
+            <div class="transcription-details" style="display: none; background-color: #f8f9fa; padding: 15px; border: 1px solid #ccc; border-radius: 8px; margin-left: 20px; margin-top: 5px;">
+                Juan: Buenas tardes IA<br>
+                IA: Buenas tardes Juan, estoy aquí para ayudarte
+            </div>
+        </div>
+        <div class="transcripcion-container col-md-8">
+            <div class="transcription-session" style="cursor: pointer;" onclick="toggleTranscription(this)">
+                <strong>11:54 - 12:01</strong>
+            </div>
+            <div class="transcription-details" style="display: none; background-color: #f8f9fa; padding: 15px; border: 1px solid #ccc; border-radius: 8px; margin-left: 20px; margin-top: 5px;">
+                Juan: Buenas tardes IA<br>
+                IA: Buenas tardes Juan, estoy aquí para ayudarte
+            </div>
+        </div>
+    </div>
+    <div class="mt-4">
+        <h5 style="font-size: 1.5rem; color: #6c757d;">26/04/2024</h5>
+        <div class="transcripcion-container col-md-8">
+            <div class="transcription-session" style="cursor: pointer;" onclick="toggleTranscription(this)">
+                <strong>16:03 - 17:10</strong>
+            </div>
+            <div class="transcription-details" style="display: none; background-color: #f8f9fa; padding: 15px; border: 1px solid #ccc; border-radius: 8px; margin-left: 20px; margin-top: 5px;">
+                Juan: Buenas tardes IA<br>
+                IA: Buenas tardes Juan, estoy aquí para ayudarte
+            </div>
+        </div>
+        <div class="transcripcion-container col-md-8">
+            <div class="transcription-session" style="cursor: pointer;" onclick="toggleTranscription(this)">
+                <strong>8:50 - 9:06</strong>
+            </div>
+            <div class="transcription-details" style="display: none; background-color: #f8f9fa; padding: 15px; border: 1px solid #ccc; border-radius: 8px; margin-left: 20px; margin-top: 5px;">
+                Juan: Buenas tardes IA<br>
+                IA: Buenas tardes Juan, estoy aquí para ayudarte
+            </div>
+        </div>
+        <div class="transcripcion-container col-md-8">
+            <div class="transcription-session" style="cursor: pointer;" onclick="toggleTranscription(this)">
+                <strong>8:30 - 8:36</strong>
+            </div>
+            <div class="transcription-details" style="display: none; background-color: #f8f9fa; padding: 15px; border: 1px solid #ccc; border-radius: 8px; margin-left: 20px; margin-top: 5px;">
+                Juan: Buenas tardes IA<br>
+                IA: Buenas tardes Juan, estoy aquí para ayudarte
+            </div>
+        </div>
+        <div class="transcripcion-container col-md-8">
+            <div class="transcription-session" style="cursor: pointer;" onclick="toggleTranscription(this)">
+                <strong>6:50 - 6:59</strong>
+            </div>
+            <div class="transcription-details" style="display: none; background-color: #f8f9fa; padding: 15px; border: 1px solid #ccc; border-radius: 8px; margin-left: 20px; margin-top: 5px;">
+                Juan: Buenas tardes IA<br>
+                IA: Buenas tardes Juan, estoy aquí para ayudarte
+            </div>
+        </div>
+    </div>
+    <div class="mt-4">
+        <h5 style="font-size: 1.5rem; color: #6c757d;">20/04/2024</h5>
+        <div class="transcripcion-container col-md-8">
+            <div class="transcription-session" style="cursor: pointer;" onclick="toggleTranscription(this)">
+                <strong>17:04 - 17:12</strong>
+            </div>
+            <div class="transcription-details" style="display: none; background-color: #f8f9fa; padding: 15px; border: 1px solid #ccc; border-radius: 8px; margin-left: 20px; margin-top: 5px;">
+                Juan: Buenas tardes IA<br>
+                IA: Buenas tardes Juan, estoy aquí para ayudarte
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function toggleTranscription(element) {
+        const nextElement = element.nextElementSibling;
+        if (nextElement.style.display === "none") {
+            nextElement.style.display = "block";
+        } else {
+            nextElement.style.display = "none";
+        }
+    }
+</script>
+{% endblock %}

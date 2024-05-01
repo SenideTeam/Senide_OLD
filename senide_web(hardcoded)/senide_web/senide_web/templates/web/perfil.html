@@ -1,0 +1,114 @@
+{% extends "web/base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1 class="mb-3">Perfil</h1>
+    <div class="row">
+        <div class="col-md-4">
+            <!-- Div circular para la imagen de perfil -->
+            <div class="profile-img-container mx-auto">
+                <div class="profile-img-image">
+                    <img src="{% static 'images/profile.png' %}" alt="Gorka Garcia Altube" class="img-fluid">
+                </div>
+            </div>
+        </div>
+        <div class="col-md-8">
+            <!-- Información del perfil -->
+            <div class="profile-info">
+                <h2>Gorka Garcia Altube</h2>
+                <p class="text-secondary">12/05/2004</p>
+                <p>Cuidador de Juan Carlos Garcia</p>
+            </div>
+        </div>
+    </div>
+    <!-- Pestañas de perfil -->
+    <div class="profile-tabs mt-4">
+        <ul class="nav nav-tabs">
+            <li class="nav-item">
+                <a class="nav-link active" data-bs-toggle="tab" href="#cuidador">Cuidador</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" data-bs-toggle="tab" href="#usuario">Usuario</a>
+            </li>
+        </ul>
+        <div class="tab-content">
+            <div id="cuidador" class="container tab-pane active"><br>
+                <!-- Formulario de Cuidador -->
+                <form class="form-perfil">
+                    {% csrf_token %}
+                    <!-- Los campos del formulario aquí -->
+                    <div class="form-group">
+                        <div class="mb-3">
+                            <input type="text" class="form-control" value="Gorka" placeholder="Nombre" required>
+                        </div>
+                        <div class="mb-3">
+                            <input type="text" class="form-control" value="Garcia" placeholder="Primer apellido" required>
+                        </div>
+                        <div class="mb-3">
+                            <input type="text" class="form-control" value="Altube" placeholder="Segundo apellido" required>
+                        </div>
+                        <div class="mb-3">
+                            <input type="date" class="form-control" value="2024-05-12" placeholder="Fecha de nacimiento" required>
+                        </div>
+                        <div class="mb-3">
+                            <input type="text" class="form-control" value="Gabolats 20" placeholder="Dirección" required>
+                        </div>
+                        <div class="mb-3">
+                            <input type="text" class="form-control" value="Soraluze" placeholder="Población" required>
+                        </div>
+                        <div class="mb-3">
+                            <input type="num" class="form-control" value="20590" placeholder="Código postal" required>
+                        </div>
+                        <div class="mb-3">
+                            <input type="tel" class="form-control" value="688826404" placeholder="Número de teléfono" required>
+                        </div>
+                        <div class="mb-3">
+                            <input type="email" class="form-control" value="garcia.gorka@uni.eus" placeholder="Correo electrónico" required>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary mt-3">Guardar</button>
+                </form>
+            </div>
+            <div id="usuario" class="container tab-pane fade"><br>
+                <!-- Formulario de Usuario -->
+                <h3>Juan Carlos Garcia</h3>
+                <form class="form-perfil">
+                    {% csrf_token %}
+                    <!-- Los campos del formulario aquí -->
+                    <div class="form-group">
+                        <div class="mb-3">
+                            <input type="text" class="form-control" value="Juan Carlos" placeholder="Nombre" required>
+                        </div>
+                        <div class="mb-3">
+                            <input type="text" class="form-control" value="Garcia" placeholder="Primer apellido" required>
+                        </div>
+                        <div class="mb-3">
+                            <input type="text" class="form-control" value="González" placeholder="Segundo apellido" required>
+                        </div>
+                        <div class="mb-3">
+                            <input type="date" class="form-control" value="1951-10-10" placeholder="Fecha de nacimiento" required>
+                        </div>
+                        <div class="mb-3">
+                            <input type="text" class="form-control" value="Plaza zaharra 6" placeholder="Dirección" required>
+                        </div>
+                        <div class="mb-3">
+                            <input type="text" class="form-control" value="Eibar" placeholder="Población" required>
+                        </div>
+                        <div class="mb-3">
+                            <input type="num" class="form-control" value="20600" placeholder="Código postal" required>
+                        </div>
+                        <div class="mb-3">
+                            <input type="tel" class="form-control" value="645875742" placeholder="Número de teléfono" required>
+                        </div>
+                        <div class="mb-3">
+                            <input type="email" class="form-control" value="jcgonzalez@gmail.com" placeholder="Correo electrónico" required>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary mt-3">Guardar</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
