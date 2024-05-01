@@ -73,6 +73,13 @@ def process_recognition(text: str, dynamic_context: str, llama) -> Tuple[Dict[st
         assistant_response = response.json()['choices'][0]['message']['content']
         updated_context += f"\n\nRespuesta de Llama: {assistant_response}"
         # Asegúrate que el retorno cumple con la estructura esperada
+        
+        
+        guardar(text, assistant_response)
+        # Eliminar el archivo de audio original y convertido
+        # os.remove(original_path)
+        # os.remove(converted_path)
+        
         return {'response': {'text': text, 'llama_response': assistant_response}, 'updated_context': updated_context}, 200
     else:
         logging.error("LlamaAPI error: %s", response.text)

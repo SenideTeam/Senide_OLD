@@ -5,6 +5,8 @@ from llamaapi import LlamaAPI
 import logging
 import funciones
 
+
+
 app = Flask(__name__)
 CORS(app)
 llama = LlamaAPI("LL-UHp8T1ChDqZdLKMDXPlgWyKaGkzQ8Y32zc55lmE6ZwF62lko1TeRmQVxFKw6LgKS")
@@ -40,7 +42,9 @@ def upload_audio() -> Union[Response, Tuple[Response, int]]:
 
     audio_file = request.files['audio']
     original_path, converted_path = funciones.save_and_convert_audio(audio_file)
-
+    
+   
+    
     if original_path is None or converted_path is None:
         return jsonify({'error': 'Failed to convert the audio'}), 500
 
