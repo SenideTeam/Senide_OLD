@@ -67,14 +67,14 @@
             const bufferLength = realTimeAnalyser.frequencyBinCount;
             const dataArray = new Uint8Array(bufferLength);
             realTimeAnalyser.getByteTimeDomainData(dataArray);
-            
+        
             let sum = 0;
             for (let i = 0; i < bufferLength; i++) {
                 const x = (dataArray[i] - 128) / 128.0;
                 sum += x * x;
             }
             const rms = Math.sqrt(sum / bufferLength);
-            
+        
             if (rms > silenceThreshold && !isSpeaking) {
                 lastTimeAboveThreshold = Date.now();
                 if (!isRecording) {
@@ -88,7 +88,7 @@
                 mediaRecorder.stop();
                 console.log('Silencio detectado, grabación detenida');
             }
-            
+        
             requestAnimationFrame(checkAudio);
         }
 
@@ -129,7 +129,7 @@
             const utterance = new SpeechSynthesisUtterance(text);
             utterance.onstart = () => { isSpeaking = true; };
             utterance.onend = () => { isSpeaking = false; checkAudio(); }; // Reanudar la comprobación del audio al finalizar la voz
-            utterance.voice = speechSynthesis.getVoices().find(voice => voice.lang === 'es-ES' or voice.lang.startsWith('es'));
+            utterance.voice = speechSynthesis.getVoices().find(voice => voice.lang === 'es-ES' || voice.lang.startsWith('es'));
             speechSynthesis.speak(utterance);
         }
     </script>
