@@ -1,3 +1,0 @@
-Pregunta: dime la temperatura de hoy
-Respuesta: ¡Claro! La temperatura actual en tu ciudad es de aproximadamente 25°C (77°F). ¿Necesitas más información?
-

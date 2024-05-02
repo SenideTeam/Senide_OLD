@@ -20,7 +20,7 @@ def guardar(pregunta: str, respuesta: str) -> None:
     nombre_archivo = f"conversacion_{fecha_actual}.txt"
     ruta_archivo = os.path.join(ruta_directorio, nombre_archivo)
 
-    with open(ruta_archivo, "a") as file:
+    with open(ruta_archivo, "a", encoding="utf-8") as file:
         file.write(f"Pregunta: {pregunta}\nRespuesta: {respuesta}\n\n")
 
 def save_and_convert_audio(audio_file) -> Tuple[Optional[str], Optional[str]]:
