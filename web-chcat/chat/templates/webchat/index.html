@@ -140,7 +140,13 @@
             if (mediaRecorder && isRecording) {
                 mediaRecorder.stop();
             }
+            // Cerrar la ventana actual
             window.close();
+
+            // Finalizar la ejecución de la aplicación web (opcional)
+            // Este código no funcionará en todos los navegadores debido a restricciones de seguridad.
+            // Puede que necesites otras estrategias dependiendo del entorno de ejecución.
+            // window.open('about:blank', '_self').close(); 
         }
     </script>
 </body>
