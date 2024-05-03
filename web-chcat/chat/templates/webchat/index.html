@@ -7,8 +7,9 @@
 </head>
 <body>
     <div class="container mt-5">
-        <h1>Grabar Audio</h1>
-        <button id="recordButton" class="btn btn-primary">Iniciar Monitoreo</button>
+        <h1>Grabadora de Audio Automática</h1>
+        <p>La grabación empezará automáticamente...</p>
+        <button id="closeButton" class="btn btn-danger mt-3">Cerrar Aplicación</button>
     </div>
 
     <script>
@@ -23,8 +24,7 @@
         const silenceTime = 1500; // Tiempo en ms para considerar que el silencio significa fin de habla
         let isSpeaking = false; // Estado de la reproducción de voz
 
-        document.getElementById('recordButton').addEventListener('click', () => {
-            const recordButton = document.getElementById('recordButton');
+        function startMonitoring() {
             navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
                 if (!audioContext) {
                     audioContext = new AudioContext();
@@ -56,11 +56,9 @@
                     };
                 }
                 
-                recordButton.textContent = "Monitoreando...";
-                recordButton.disabled = true;
                 console.log('Monitoreo iniciado');
             }).catch(error => console.error("Error al acceder a los dispositivos multimedia.", error));
-        });
+        }
 
         function checkAudio() {
             if (isSpeaking) return; // No iniciar la grabación si se está hablando
@@ -132,6 +130,13 @@
             utterance.voice = speechSynthesis.getVoices().find(voice => voice.lang === 'es-ES' || voice.lang.startsWith('es'));
             speechSynthesis.speak(utterance);
         }
+
+        function closeApplication() {
+            window.close();
+        }
+
+        document.getElementById('closeButton').addEventListener('click', closeApplication);
+        window.onload = startMonitoring;
     </script>
 </body>
 </html>
