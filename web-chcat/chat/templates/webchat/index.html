@@ -8,7 +8,7 @@
 <body>
     <div class="container mt-5">
         <h1>Grabar Audio</h1>
-        <button id="stopButton" class="btn btn-danger">Detener y Cerrar</button>
+        <button id="recordButton" class="btn btn-primary">Iniciar Monitoreo</button>
     </div>
 
     <script>
@@ -23,13 +23,8 @@
         const silenceTime = 1500; // Tiempo en ms para considerar que el silencio significa fin de habla
         let isSpeaking = false; // Estado de la reproducción de voz
 
-        document.addEventListener('DOMContentLoaded', () => {
-            const stopButton = document.getElementById('stopButton');
-            stopButton.addEventListener('click', stopRecordingAndClose);
-            startRecording();
-        });
-
-        function startRecording() {
+        document.getElementById('recordButton').addEventListener('click', () => {
+            const recordButton = document.getElementById('recordButton');
             navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
                 if (!audioContext) {
                     audioContext = new AudioContext();
@@ -61,9 +56,11 @@
                     };
                 }
                 
+                recordButton.textContent = "Monitoreando...";
+                recordButton.disabled = true;
                 console.log('Monitoreo iniciado');
             }).catch(error => console.error("Error al acceder a los dispositivos multimedia.", error));
-        }
+        });
 
         function checkAudio() {
             if (isSpeaking) return; // No iniciar la grabación si se está hablando
@@ -134,19 +131,6 @@
             utterance.onend = () => { isSpeaking = false; checkAudio(); }; // Reanudar la comprobación del audio al finalizar la voz
             utterance.voice = speechSynthesis.getVoices().find(voice => voice.lang === 'es-ES' || voice.lang.startsWith('es'));
             speechSynthesis.speak(utterance);
-        }
-
-        function stopRecordingAndClose() {
-            if (mediaRecorder && isRecording) {
-                mediaRecorder.stop();
-            }
-            // Cerrar la ventana actual
-            window.close();
-
-            // Finalizar la ejecución de la aplicación web (opcional)
-            // Este código no funcionará en todos los navegadores debido a restricciones de seguridad.
-            // Puede que necesites otras estrategias dependiendo del entorno de ejecución.
-            // window.open('about:blank', '_self').close(); 
         }
     </script>
 </body>
