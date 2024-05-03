@@ -3,7 +3,7 @@ import numpy as np
 import speech_recognition as sr
 from llamaapi import LlamaAPI
 import pyttsx3
-from guardar_respuesta import guardar
+from guardar_respuesta import guardar_conversacion
 
 # Configuración de PyAudio
 FORMAT = pyaudio.paInt16
@@ -70,7 +70,7 @@ while True:
             print("Llama: " + assistant_response)
             
             # Guarda la respuesta
-            guardar(text,assistant_response)
+            guardar_conversacion(text,assistant_response)
             
             # Convertir la respuesta en audio y reproducirla
             engine.say(assistant_response)
