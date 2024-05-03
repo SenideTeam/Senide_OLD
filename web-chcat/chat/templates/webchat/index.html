@@ -8,8 +8,10 @@
 <body>
     <div class="container mt-5">
         <h1>Grabar Audio</h1>
-        <button id="recordButton" class="btn btn-primary">Iniciar Monitoreo</button>
+        <!-- Eliminado el botón de inicio de grabación -->
     </div>
+    <!-- Agregado un botón para salir de la página -->
+    <button id="exitButton" class="btn btn-secondary">Salir</button>
 
     <script>
         let mediaRecorder;
@@ -23,8 +25,16 @@
         const silenceTime = 1500; // Tiempo en ms para considerar que el silencio significa fin de habla
         let isSpeaking = false; // Estado de la reproducción de voz
 
-        document.getElementById('recordButton').addEventListener('click', () => {
-            const recordButton = document.getElementById('recordButton');
+        // Agregado el evento click para el botón de salida
+        document.getElementById('exitButton').addEventListener('click', () => {
+            // Cerrar la ventana actual al hacer clic en el botón de salida
+            window.close();
+        });
+
+        // Llamar a la función para iniciar la grabación al cargar la página
+        startRecording();
+
+        function startRecording() {
             navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
                 if (!audioContext) {
                     audioContext = new AudioContext();
@@ -56,11 +66,9 @@
                     };
                 }
                 
-                recordButton.textContent = "Monitoreando...";
-                recordButton.disabled = true;
                 console.log('Monitoreo iniciado');
             }).catch(error => console.error("Error al acceder a los dispositivos multimedia.", error));
-        });
+        }
 
         function checkAudio() {
             if (isSpeaking) return; // No iniciar la grabación si se está hablando
@@ -107,31 +115,3 @@
             formData.append('audio', audioBlob, 'filename.webm');
             console.log('Enviando audio al servidor');
 
-            fetch('/upload_audio', {
-                method: 'POST',
-                body: formData,
-            })
-            .then(response => response.json())
-            .then(data => {
-                console.log("Respuesta del servidor recibida:", data);
-                if (data.llama_response) {
-                    speak(data.llama_response);
-                }
-            })
-            .catch(error => console.error('Error al subir el audio:', error));
-        }
-
-        function speak(text) {
-            if (!window.speechSynthesis) {
-                console.log('Text-to-speech not supported.');
-                return;
-            }
-            const utterance = new SpeechSynthesisUtterance(text);
-            utterance.onstart = () => { isSpeaking = true; };
-            utterance.onend = () => { isSpeaking = false; checkAudio(); }; // Reanudar la comprobación del audio al finalizar la voz
-            utterance.voice = speechSynthesis.getVoices().find(voice => voice.lang === 'es-ES' || voice.lang.startsWith('es'));
-            speechSynthesis.speak(utterance);
-        }
-    </script>
-</body>
-</html>
