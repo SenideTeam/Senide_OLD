@@ -24,10 +24,6 @@ def guardar(pregunta: str, respuesta: str, session_id: str) -> None:
         file.write(f"Pregunta: {pregunta}\nRespuesta: {respuesta}\n\n")
 
 def save_and_convert_audio(audio_file) -> Tuple[Optional[str], Optional[str]]:
-    """
-    Guarda y convierte un archivo de audio recibido al formato WAV.
-    Retorna las rutas del archivo original y del archivo convertido, o (None, None) si hay un error.
-    """
     directory = os.path.join(os.path.dirname(__file__), "audio")
     os.makedirs(directory, exist_ok=True)
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -45,22 +41,18 @@ def save_and_convert_audio(audio_file) -> Tuple[Optional[str], Optional[str]]:
     return original_path, converted_path
 
 def transcribe_audio(converted_path: str) -> Tuple[Optional[str], Optional[Dict[str, Any]]]:
-    """
-    Transcribe el audio convertido a texto usando Google Speech Recognition.
-    Retorna el texto transcrito o (None, error_details) si hay un error.
-    """
     with sr.AudioFile(converted_path) as source:
         recognizer = sr.Recognizer()
         audio_data = recognizer.record(source)
         try:
-            text = recognizer.recognize_google(audio_data, language='es-ES') # type: ignore
+            text = recognizer.recognize_google(audio_data, language='es-ES')
             return text, None
         except sr.UnknownValueError:
             return None, {'error': 'Could not understand audio', 'details': 'No speech could be recognized', 'status': 422}
         except sr.RequestError as e:
             return None, {'error': 'Speech recognition service error', 'details': str(e), 'status': 503}
 
-def process_recognition(text: str, dynamic_context: str, llama, session_id: str) -> Tuple[Dict[str, Any], int]:
+def process_recognition(text: str, dynamic_context: str, llama, session_id: str, original_path: str, converted_path: str) -> Tuple[Dict[str, Any], int]:
     updated_context = f"{dynamic_context}\n\nÚltima interacción: {text}"
     api_request_json = {
         "messages": [
@@ -73,10 +65,16 @@ def process_recognition(text: str, dynamic_context: str, llama, session_id: str)
         assistant_response = response.json()['choices'][0]['message']['content']
         updated_context += f"\n\nRespuesta de Llama: {assistant_response}"
         
-        guardar(text, assistant_response, session_id)  # Ahora pasamos session_id a guardar
-        
+        guardar(text, assistant_response, session_id)
+
+        try:
+            os.remove(original_path)
+            os.remove(converted_path)
+            logging.info("Audio files deleted successfully.")
+        except Exception as e:
+            logging.error(f"Error deleting audio files: {str(e)}")
+
         return {'response': {'text': text, 'llama_response': assistant_response}, 'updated_context': updated_context}, 200
     else:
         logging.error("LlamaAPI error: %s", response.text)
         return {'response': {'error': 'LlamaAPI error', 'details': response.text}}, response.status_code
-
