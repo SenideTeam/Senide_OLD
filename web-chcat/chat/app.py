@@ -34,32 +34,31 @@ def index():
 
 @app.route('/upload_audio', methods=['POST'])
 def upload_audio() -> Union[Response, Tuple[Response, int]]:
-    global dynamic_context  # Make sure to reference the global variable
-    logging.info("Request received with files: %s", request.files)
+    global dynamic_context  # Asegúrate de referenciar la variable global
+    logging.info("Request received with files: %s and form data: %s", request.files, request.form)
+    
     if 'audio' not in request.files:
         logging.error("No valid audio file provided or file format not supported.")
         return jsonify({'error': 'No valid audio file provided or file format not supported'}), 400
 
     audio_file = request.files['audio']
+    page_load_count = request.form.get('pageLoadCount', 'default_session')  # Extraer el contador de carga de página del formulario
+
     original_path, converted_path = funciones.save_and_convert_audio(audio_file)
-    
-    
     if original_path is None or converted_path is None:
         return jsonify({'error': 'Failed to convert the audio'}), 500
 
     text, error_details = funciones.transcribe_audio(converted_path)
     if text is None:
-        if error_details and isinstance(error_details, dict):
-            return jsonify(error_details), error_details.get('status', 500)
-        else:
-            return jsonify({'error': 'Error processing audio'}), 500
+        return jsonify(error_details), error_details.get('status', 500) if error_details else jsonify({'error': 'Error processing audio'}), 500
 
-    result, status = funciones.process_recognition(text, dynamic_context, llama)
+    result, status = funciones.process_recognition(text, dynamic_context, llama, page_load_count)
     if status == 200:
-        dynamic_context = result['updated_context']  # Update the global dynamic context
+        dynamic_context = result['updated_context']  # Actualizar el contexto dinámico global
         return jsonify(result['response']), 200
     else:
         return jsonify(result['response']), result.get('status_code', 500)
+
 
 
 

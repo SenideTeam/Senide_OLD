@@ -26,6 +26,18 @@
         const silenceTime = 3300; // Tiempo en ms para considerar que el silencio significa fin de habla
         let isSpeaking = false; // Estado de la reproducción de voz
 
+        // Inicializar o actualizar la variable en el almacenamiento local
+        function updatePageLoadCount() {
+            let count = localStorage.getItem('pageLoadCount');
+            count = count ? parseInt(count) + 1 : 1;  // Incrementar si ya existe, o inicializar a 1
+            localStorage.setItem('pageLoadCount', count);
+            return count;
+        }
+
+        // Llamar esta función al cargar la página
+        let pageLoadCount = updatePageLoadCount();
+        console.log('Número de cargas de página:', pageLoadCount);
+
         function startMonitoring() {
             navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
                 if (!audioContext) {
@@ -105,7 +117,9 @@
         function sendAudioToServer(audioBlob) {
             const formData = new FormData();
             formData.append('audio', audioBlob, 'filename.webm');
-            console.log('Enviando audio al servidor');
+            // Agregar la variable pageLoadCount al formulario
+            formData.append('pageLoadCount', pageLoadCount);
+            console.log('Enviando audio y número de carga de página al servidor');
 
             fetch('/upload_audio', {
                 method: 'POST',

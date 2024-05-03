@@ -5,9 +5,10 @@ import speech_recognition as sr
 import logging
 from typing import Tuple, Optional, Dict, Any
 
-def guardar(pregunta: str, respuesta: str) -> None:
+def guardar(pregunta: str, respuesta: str, session_id: str) -> None:
     """
     Guarda la 'pregunta' y la 'respuesta' en un archivo de texto en un directorio específico.
+    Utiliza el 'session_id' para agrupar las conversaciones relacionadas.
     """
     directorio_actual = os.path.dirname(__file__)
     directorio = "respuestas_asistente"
@@ -16,8 +17,7 @@ def guardar(pregunta: str, respuesta: str) -> None:
     if not os.path.exists(ruta_directorio):
         os.makedirs(ruta_directorio)
 
-    fecha_actual = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-    nombre_archivo = f"conversacion_{fecha_actual}.txt"
+    nombre_archivo = f"conversacion_{session_id}.txt"  # Usar session_id en el nombre del archivo
     ruta_archivo = os.path.join(ruta_directorio, nombre_archivo)
 
     with open(ruta_archivo, "a", encoding="utf-8") as file:
@@ -60,7 +60,7 @@ def transcribe_audio(converted_path: str) -> Tuple[Optional[str], Optional[Dict[
         except sr.RequestError as e:
             return None, {'error': 'Speech recognition service error', 'details': str(e), 'status': 503}
 
-def process_recognition(text: str, dynamic_context: str, llama) -> Tuple[Dict[str, Any], int]:
+def process_recognition(text: str, dynamic_context: str, llama, session_id: str) -> Tuple[Dict[str, Any], int]:
     updated_context = f"{dynamic_context}\n\nÚltima interacción: {text}"
     api_request_json = {
         "messages": [
@@ -72,16 +72,11 @@ def process_recognition(text: str, dynamic_context: str, llama) -> Tuple[Dict[st
     if response.status_code == 200:
         assistant_response = response.json()['choices'][0]['message']['content']
         updated_context += f"\n\nRespuesta de Llama: {assistant_response}"
-        # Asegúrate que el retorno cumple con la estructura esperada
         
-        
-        guardar(text, assistant_response)
-        # Eliminar el archivo de audio original y convertido
-        # os.remove(original_path)
-        # os.remove(converted_path)
+        guardar(text, assistant_response, session_id)  # Ahora pasamos session_id a guardar
         
         return {'response': {'text': text, 'llama_response': assistant_response}, 'updated_context': updated_context}, 200
     else:
         logging.error("LlamaAPI error: %s", response.text)
-        # Asegúrate que el retorno cumple con la estructura esperada en caso de error
         return {'response': {'error': 'LlamaAPI error', 'details': response.text}}, response.status_code
+
