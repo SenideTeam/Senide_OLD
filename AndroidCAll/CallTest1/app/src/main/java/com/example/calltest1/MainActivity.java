@@ -68,6 +68,7 @@ public class MainActivity extends AppCompatActivity {
                             if (elapsedTime < 15000) {
                                 Intent webIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://www.google.com"));
                                 startActivity(webIntent);
+                                finish();
                             }
                             callEnded = true; // Indicar que la llamada ha terminado
                         }
@@ -96,7 +97,6 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 Intent callIntent = new Intent(Intent.ACTION_CALL);
                 callIntent.setData(Uri.parse("tel:" + phoneNumber));
-                finish();
                 if (ActivityCompat.checkSelfPermission(MainActivity.this, Manifest.permission.CALL_PHONE) == PackageManager.PERMISSION_GRANTED) {
                     startActivity(callIntent);
                 } else {
