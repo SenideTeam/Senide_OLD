@@ -34,10 +34,10 @@ public class MainActivity extends AppCompatActivity {
             initTelephonyManager();
         }
 
-        setupImageView(findViewById(R.id.imageView1), "684263667"); // Número específico para imageView1
-        setupImageView(findViewById(R.id.imageView2), "662204776"); // Número general para otras imágenes
-        setupImageView(findViewById(R.id.imageView3), "123456789");
-        setupImageView(findViewById(R.id.imageView4), "123456789");
+        setupImageView(findViewById(R.id.imageView1), "684263667"); //Gerson
+        setupImageView(findViewById(R.id.imageView2), "662204776"); //Aritz
+        setupImageView(findViewById(R.id.imageView3), "688826404"); //Gorka
+        setupImageView(findViewById(R.id.imageView4), "634431480"); //Telle
 
         Button btnCerrar = findViewById(R.id.btnCerrar);
         btnCerrar.setOnClickListener(new View.OnClickListener() {
@@ -66,7 +66,7 @@ public class MainActivity extends AppCompatActivity {
                             long elapsedTime = endTime - startTime;
                             // Verificar si la llamada fue menor a 15 segundos
                             if (elapsedTime < 15000) {
-                                Intent webIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://www.google.com"));
+                                Intent webIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://www.senide.info"));
                                 startActivity(webIntent);
                                 finish();
                             }
