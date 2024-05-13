@@ -22,6 +22,7 @@ public class MainActivity extends AppCompatActivity {
     private static final int REQUEST_READ_PHONE_STATE = 2;
     private long startTime; // Tiempo de inicio de la llamada
     private boolean callEnded = true; // Para verificar si la llamada ha terminado
+    private String currentUserId = ""; // Almacenar el ID del usuario actual
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,10 +35,10 @@ public class MainActivity extends AppCompatActivity {
             initTelephonyManager();
         }
 
-        setupImageView(findViewById(R.id.imageView1), "684263667");//Gerson // Número específico para imageView1
-        setupImageView(findViewById(R.id.imageView2), "662204776");//Aritz // Número general para otras imágenes
-        setupImageView(findViewById(R.id.imageView3), "634431480");//Telle
-        setupImageView(findViewById(R.id.imageView4), "688826404");//Gorka
+        setupImageView(findViewById(R.id.imageView1), "684263667", "1");//Gerson
+        setupImageView(findViewById(R.id.imageView2), "662204776", "2");//Aritz
+        setupImageView(findViewById(R.id.imageView3), "634431480", "3");//Telle
+        setupImageView(findViewById(R.id.imageView4), "688826404", "4");//Gorka
 
         Button btnCerrar = findViewById(R.id.btnCerrar);
         btnCerrar.setOnClickListener(new View.OnClickListener() {
@@ -56,26 +57,23 @@ public class MainActivity extends AppCompatActivity {
                 super.onCallStateChanged(state, incomingNumber);
                 switch (state) {
                     case TelephonyManager.CALL_STATE_OFFHOOK:
-                        // La llamada ha comenzado
                         startTime = System.currentTimeMillis();
-                        callEnded = false; // Restablecer el estado de finalización de la llamada
+                        callEnded = false;
                         break;
                     case TelephonyManager.CALL_STATE_IDLE:
                         if (!callEnded) {
                             long endTime = System.currentTimeMillis();
                             long elapsedTime = endTime - startTime;
-                            // Verificar si la llamada fue menor a 15 segundos
                             if (elapsedTime < 15000) {
-                                Intent webIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://www.google.com"));
+                                Intent webIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("http://dirección?uid=" + currentUserId));
                                 startActivity(webIntent);
                             }
-                            callEnded = true; // Indicar que la llamada ha terminado
+                            callEnded = true;
                         }
                         break;
                 }
             }
         }, PhoneStateListener.LISTEN_CALL_STATE);
-
     }
 
     @Override
@@ -90,13 +88,13 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void setupImageView(ImageView imageView, String phoneNumber) {
+    private void setupImageView(ImageView imageView, String phoneNumber, String userId) {
         imageView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                currentUserId = userId; // Establecer el ID del usuario actual
                 Intent callIntent = new Intent(Intent.ACTION_CALL);
                 callIntent.setData(Uri.parse("tel:" + phoneNumber));
-                finish();
                 if (ActivityCompat.checkSelfPermission(MainActivity.this, Manifest.permission.CALL_PHONE) == PackageManager.PERMISSION_GRANTED) {
                     startActivity(callIntent);
                 } else {
