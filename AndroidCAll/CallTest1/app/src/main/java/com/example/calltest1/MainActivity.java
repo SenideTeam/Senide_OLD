@@ -34,10 +34,10 @@ public class MainActivity extends AppCompatActivity {
             initTelephonyManager();
         }
 
-        setupImageView(findViewById(R.id.imageView1), "684263667"); // Número específico para imageView1
-        setupImageView(findViewById(R.id.imageView2), "662204776"); // Número general para otras imágenes
-        setupImageView(findViewById(R.id.imageView3), "123456789");
-        setupImageView(findViewById(R.id.imageView4), "123456789");
+        setupImageView(findViewById(R.id.imageView1), "684263667");//Gerson // Número específico para imageView1
+        setupImageView(findViewById(R.id.imageView2), "662204776");//Aritz // Número general para otras imágenes
+        setupImageView(findViewById(R.id.imageView3), "634431480");//Telle
+        setupImageView(findViewById(R.id.imageView4), "688826404");//Gorka
 
         Button btnCerrar = findViewById(R.id.btnCerrar);
         btnCerrar.setOnClickListener(new View.OnClickListener() {
