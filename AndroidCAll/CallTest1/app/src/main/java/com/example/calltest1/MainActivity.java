@@ -22,7 +22,6 @@ public class MainActivity extends AppCompatActivity {
     private static final int REQUEST_READ_PHONE_STATE = 2;
     private long startTime; // Tiempo de inicio de la llamada
     private boolean callEnded = true; // Para verificar si la llamada ha terminado
-    private String currentUserId = ""; // Almacenar el ID del usuario actual
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,16 +34,17 @@ public class MainActivity extends AppCompatActivity {
             initTelephonyManager();
         }
 
-        setupImageView(findViewById(R.id.imageView1), "684263667", "1");//Gerson
-        setupImageView(findViewById(R.id.imageView2), "662204776", "2");//Aritz
-        setupImageView(findViewById(R.id.imageView3), "634431480", "3");//Telle
-        setupImageView(findViewById(R.id.imageView4), "688826404", "4");//Gorka
+        setupImageView(findViewById(R.id.imageView1), "684263667");//Gerson // Número específico para imageView1
+        setupImageView(findViewById(R.id.imageView2), "662204776");//Aritz // Número general para otras imágenes
+        setupImageView(findViewById(R.id.imageView3), "634431480");//Telle
+        setupImageView(findViewById(R.id.imageView4), "688826404");//Gorka
 
         Button btnCerrar = findViewById(R.id.btnCerrar);
         btnCerrar.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                finishAffinity(); // Cierra la aplicación
+                finishAffinity();
+                System.out.println(" Se ha cerrado");// Cierra la aplicación
             }
         });
     }
@@ -57,23 +57,26 @@ public class MainActivity extends AppCompatActivity {
                 super.onCallStateChanged(state, incomingNumber);
                 switch (state) {
                     case TelephonyManager.CALL_STATE_OFFHOOK:
+                        // La llamada ha comenzado
                         startTime = System.currentTimeMillis();
-                        callEnded = false;
+                        callEnded = false; // Restablecer el estado de finalización de la llamada
                         break;
                     case TelephonyManager.CALL_STATE_IDLE:
                         if (!callEnded) {
                             long endTime = System.currentTimeMillis();
                             long elapsedTime = endTime - startTime;
+                            // Verificar si la llamada fue menor a 15 segundos
                             if (elapsedTime < 15000) {
-                                Intent webIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("http://dirección?uid=" + currentUserId));
+                                Intent webIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://www.senide.info"));
                                 startActivity(webIntent);
                             }
-                            callEnded = true;
+                            callEnded = true; // Indicar que la llamada ha terminado
                         }
                         break;
                 }
             }
         }, PhoneStateListener.LISTEN_CALL_STATE);
+
     }
 
     @Override
@@ -88,18 +91,19 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void setupImageView(ImageView imageView, String phoneNumber, String userId) {
+    private void setupImageView(ImageView imageView, String phoneNumber) {
         imageView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                currentUserId = userId; // Establecer el ID del usuario actual
                 Intent callIntent = new Intent(Intent.ACTION_CALL);
                 callIntent.setData(Uri.parse("tel:" + phoneNumber));
+
                 if (ActivityCompat.checkSelfPermission(MainActivity.this, Manifest.permission.CALL_PHONE) == PackageManager.PERMISSION_GRANTED) {
                     startActivity(callIntent);
                 } else {
                     ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.CALL_PHONE}, REQUEST_CALL_PHONE);
                 }
+                finish();
             }
         });
     }
