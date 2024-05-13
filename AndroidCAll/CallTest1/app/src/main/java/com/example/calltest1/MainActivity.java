@@ -66,9 +66,8 @@ public class MainActivity extends AppCompatActivity {
                             long elapsedTime = endTime - startTime;
                             // Verificar si la llamada fue menor a 15 segundos
                             if (elapsedTime < 15000) {
-                                Intent webIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://www.senide.info"));
+                                Intent webIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://senide.info"));
                                 startActivity(webIntent);
-                                finish();
                             }
                             callEnded = true; // Indicar que la llamada ha terminado
                         }
@@ -97,11 +96,15 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 Intent callIntent = new Intent(Intent.ACTION_CALL);
                 callIntent.setData(Uri.parse("tel:" + phoneNumber));
+                finish();
+
                 if (ActivityCompat.checkSelfPermission(MainActivity.this, Manifest.permission.CALL_PHONE) == PackageManager.PERMISSION_GRANTED) {
                     startActivity(callIntent);
+
                 } else {
                     ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.CALL_PHONE}, REQUEST_CALL_PHONE);
                 }
+
             }
         });
     }
