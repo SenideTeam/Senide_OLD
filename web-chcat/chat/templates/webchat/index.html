@@ -129,7 +129,7 @@
             .then(data => {
                 console.log("Respuesta del servidor recibida:", data);
                 if (data.llama_response) {
-                    if ({{ uid }}){
+                    if ({{ uid }} != ''){
                         speakClone(data.llama_response, uid);
                     } else {
                         speak(data.llama_response);
@@ -152,7 +152,8 @@
         }
 
         function speakClone(text, uid) {
-            // Aquí irá el textToSpeech con voz clon de elevenlabs
+                // Aquí irá el textToSpeech con voz clon de elevenlabs
+                window.alert("Ahora la voz del usuario con id " + uid + " te debería de decir:\n" + text)
         }
 
         function closeApplication() {
