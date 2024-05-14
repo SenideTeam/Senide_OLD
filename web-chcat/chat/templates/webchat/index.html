@@ -129,7 +129,11 @@
             .then(data => {
                 console.log("Respuesta del servidor recibida:", data);
                 if (data.llama_response) {
-                    speak(data.llama_response);
+                    if ({{ uid }}){
+                        speakClone(data.llama_response, uid);
+                    } else {
+                        speak(data.llama_response);
+                    }
                 }
             })
             .catch(error => console.error('Error al subir el audio:', error));
@@ -145,6 +149,10 @@
             utterance.onend = () => { isSpeaking = false; checkAudio(); }; // Reanudar la comprobación del audio al finalizar la voz
             utterance.voice = speechSynthesis.getVoices().find(voice => voice.lang === 'es-ES' || voice.lang.startsWith('es'));
             speechSynthesis.speak(utterance);
+        }
+
+        function speakClone(text, uid) {
+            // Aquí irá el textToSpeech con voz clon de elevenlabs
         }
 
         function closeApplication() {

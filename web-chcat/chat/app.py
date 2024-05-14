@@ -27,7 +27,8 @@ dynamic_context = initial_context
 
 @app.route('/')
 def index():
-    return render_template('webchat/index.html')
+    uid = request.args.get('uid', default='', type=str)
+    return render_template('webchat/index.html', uid=uid)
 
 @app.route('/upload_audio', methods=['POST'])
 def upload_audio() -> Union[Response, Tuple[Response, int]]:
