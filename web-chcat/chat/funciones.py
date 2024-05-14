@@ -4,6 +4,8 @@ from datetime import datetime
 import speech_recognition as sr
 import logging
 from typing import Tuple, Optional, Dict, Any
+import requests
+
 
 def guardar(pregunta: str, respuesta: str, session_id: str) -> None:
     """
@@ -45,7 +47,7 @@ def transcribe_audio(converted_path: str) -> Tuple[Optional[str], Optional[Dict[
         recognizer = sr.Recognizer()
         audio_data = recognizer.record(source)
         try:
-            text = recognizer.recognize_google(audio_data, language='es-ES')
+            text = recognizer.recognize_google(audio_data, language='es-ES') # type: ignore
             return text, None
         except sr.UnknownValueError:
             return None, {'error': 'Could not understand audio', 'details': 'No speech could be recognized', 'status': 422}
@@ -78,3 +80,34 @@ def process_recognition(text: str, dynamic_context: str, llama, session_id: str,
     else:
         logging.error("LlamaAPI error: %s", response.text)
         return {'response': {'error': 'LlamaAPI error', 'details': response.text}}, response.status_code
+
+
+def synthesize_text_with_elevenlabs(text: str, voice_id: str, xi_api_key: str) -> Tuple[Optional[bytes], Optional[Dict[str, Any]]]:
+    url = f"https://api.elevenlabs.io/v1/text-to-speech/{voice_id}/stream"
+    headers = {
+        "Accept": "application/json",
+        "xi-api-key": xi_api_key
+    }
+    data = {
+        "text": text,
+        "model_id": "eleven_multilingual_v2",  # Asumiendo que este es el modelo que quieres usar
+        "voice_settings": {
+            "stability": 0.5,
+            "similarity_boost": 0.8,
+            "style": 0.0,
+            "use_speaker_boost": True
+        }
+    }
+    
+    try:
+        response = requests.post(url, headers=headers, json=data, stream=True)
+        if response.status_code == 200:
+            audio_content = b''.join(chunk for chunk in response.iter_content(1024))
+            return audio_content, None
+        else:
+            logging.error(f"Fallo al sintetizar voz: {response.text}")
+            return None, {'error': 'Fallo al sintetizar voz', 'detalles': response.text, 'estado': response.status_code}
+    except requests.exceptions.RequestException as e:
+        logging.error(f"Error de red al contactar a ElevenLabs: {str(e)}")
+        return None, {'error': 'Fallo al realizar solicitud a ElevenLabs', 'detalles': str(e), 'estado': 500}
+

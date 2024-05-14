@@ -1,27 +1,28 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <title>Grabadora de Audio</title>
     <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        #error-container {
+            color: red;
+            margin-top: 10px;
+            font-weight: bold;
+            display: none; /* Oculto por defecto */
+        }
+    </style>
 </head>
-
 <body>
     <div class="container mt-5">
         <h1>Grabadora de Audio Automática</h1>
         <p>La grabación empezará automáticamente...</p>
         <button id="closeButton" class="btn btn-danger mt-3">Cerrar Aplicación</button>
+        <button id="exitButton" class="btn btn-secondary mt-3">Salir</button>
+        <div id="error-container"></div>
     </div>
-    <!-- Agregado un botón para salir de la página -->
-    <button id="exitButton" class="btn btn-secondary">Salir</button>
 
     <script>
-        // Obtener el uid desde el backend y almacenarlo en una variable de JavaScript
-        const uid = "{{ uid | safe }}";
-        const API_KEY = '2862eb12cfab205544b5096b0ccd560d'; // Reemplaza con tu clave real
-        const API_URL = 'https://api.elevenlabs.io/speech';
-
         let mediaRecorder;
         let audioChunks = [];
         let audioContext;
@@ -35,7 +36,7 @@
 
         function updatePageLoadCount() {
             let count = localStorage.getItem('pageLoadCount');
-            count = count ? parseInt(count) + 1 : 1;  // Incrementar si ya existe, o inicializar a 1
+            count = count ? parseInt(count) + 1 : 1;
             localStorage.setItem('pageLoadCount', count);
             return count;
         }
@@ -51,7 +52,6 @@
                     realTimeAnalyser = audioContext.createAnalyser();
                     realTimeAnalyser.fftSize = 512;
                     audioInput.connect(realTimeAnalyser);
-                    console.log('Configuración completa del contexto de audio y analizador');
                 }
 
                 checkAudio();
@@ -65,22 +65,21 @@
                     }
                     mediaRecorder.ondataavailable = e => {
                         if (e.data.size > 0 && isRecording) {
-                            console.log('Datos de grabación:', e.data.size);
                             audioChunks.push(e.data);
                         }
                     };
                     mediaRecorder.onstop = () => {
-                        console.log('Grabación detenida');
                         processAudioChunks();
                     };
                 }
-
-                console.log('Monitoreo iniciado');
-            }).catch(error => console.error("Error al acceder a los dispositivos multimedia.", error));
+            }).catch(error => {
+                console.error("Error al acceder a los dispositivos multimedia.", error);
+                displayErrorToUser("Error accessing media devices: " + error.message);
+            });
         }
 
         function checkAudio() {
-            if (isSpeaking) return; // No iniciar la grabación si se está hablando
+            if (isSpeaking) return;
             const bufferLength = realTimeAnalyser.frequencyBinCount;
             const dataArray = new Uint8Array(bufferLength);
             realTimeAnalyser.getByteTimeDomainData(dataArray);
@@ -97,13 +96,11 @@
                 if (!isRecording) {
                     isRecording = true;
                     audioChunks = [];
-                    mediaRecorder.start(1000);  // Iniciar grabación con timeslice
-                    console.log('Umbral superado, comenzando la grabación');
+                    mediaRecorder.start(1000);
                 }
             } else if (isRecording && (Date.now() - lastTimeAboveThreshold > silenceTime)) {
                 isRecording = false;
                 mediaRecorder.stop();
-                console.log('Silencio detectado, grabación detenida');
             }
 
             requestAnimationFrame(checkAudio);
@@ -111,128 +108,50 @@
 
         function processAudioChunks() {
             const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
-            console.log('Procesando trozos de audio, tamaño del blob:', audioBlob.size);
             if (audioBlob.size > 0) {
                 sendAudioToServer(audioBlob);
             } else {
                 console.error('No hay datos para enviar.');
+                displayErrorToUser('No data to send.');
             }
         }
 
         function sendAudioToServer(audioBlob) {
             const formData = new FormData();
-            formData.append('audio', audioBlob, 'filename.webm');
+            formData.append('audio', audioBlob);
             formData.append('pageLoadCount', pageLoadCount);
-            console.log('Enviando audio y número de carga de página al servidor');
 
             fetch('/upload_audio', {
                 method: 'POST',
                 body: formData,
             })
-                .then(response => response.json())
-                .then(data => {
-                    console.log("Respuesta del servidor recibida:", data);
-                    if (data.llama_response) {
-                        if (uid && uid !== '') {
-                            speakClone(data.llama_response, uid);
-                        } else {
-                            speak(data.llama_response);
-                        }
-                    }
-                })
-                .catch(error => console.error('Error al subir el audio:', error));
-        }
-
-        function speak(text) {
-            if (!window.speechSynthesis) {
-                console.log('Text-to-speech not supported.');
-                return;
-            }
-            const utterance = new SpeechSynthesisUtterance(text);
-            utterance.onstart = () => { isSpeaking = true; };
-            utterance.onend = () => { isSpeaking = false; checkAudio(); }; // Reanudar la comprobación del audio al finalizar la voz
-            utterance.voice = speechSynthesis.getVoices().find(voice => voice.lang === 'es-ES' || voice.lang.startsWith('es'));
-            speechSynthesis.speak(utterance);
-        }
-
-
-        /*async function textToSpeech(text, voiceId) {
-            const settings = {
-                voice: voiceId,  // Ajustamos esta propiedad para coincidir con la clave del objeto
-                model_id: "eleven_turbo_v2",  // Actualizando el modelo de acuerdo a la sugerencia anterior
-                text: text,
-                optimize_streaming_latency: "0",
-                output_format: "mp3_22050_32",
-                voice_settings: {
-                    stability: 0.0,
-                    similarity_boost: 1.0,
-                    style: 0.0,
-                    use_speaker_boost: true
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Failed to load response from server. Status: ' + response.status);
                 }
-            };
-
-            const response = await fetch(API_URL, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${API_KEY}`
-                },
-                body: JSON.stringify(settings)
-            });
-
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-
-            const audioBlob = await response.blob();
-            return audioBlob;
-        }*/
-
-        function speakClone(text, uid) {
-            const apiKey = '2862eb12cfab205544b5096b0ccd560d';
-
-            let voiceId = '';
-            switch (uid) {
-                case '1': // Gerson
-                    voiceId = '';
-                    break;
-                case '2': // Aritz
-                    voiceId = 'u2IPBngGM3irIDqHwwt9';
-                    break;
-                case '3': // Gorka
-                    voiceId = '4r2FcmxcEjuesUkkRSgw';
-                    break;
-                case '4': // Telle
-                    voiceId = 'griU9LMQClYI5aeSjdKp';
-                    break;
-            }
-
-            const formData = new FormData();
-            formData.append('text', text);
-            formData.append('voice_id', voiceId);
-
-            fetch('https://api.elevenlabs.io/speech', {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${apiKey}`,
-                'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-            text: text,
-            voiceId: voiceId
-        })
-    })
-    .then(response => response.blob())
+                return response.blob();
+            })
             .then(blob => {
                 const audioUrl = URL.createObjectURL(blob);
                 const audio = new Audio(audioUrl);
-                audio.onloadedmetadata = () => {  // Esperar a que el audio esté listo para reproducirse
-                    audio.play();
+                audio.play();
+                audio.onended = () => {
+                    URL.revokeObjectURL(audioUrl);
                 };
             })
-            .catch(error => console.error('Error al solicitar la síntesis de voz a ElevenLabs:', error));
-}
+            .catch(error => {
+                console.error('Error processing audio:', error);
+                displayErrorToUser('Error processing audio: ' + error.message);
+            });
+        }
 
+        function displayErrorToUser(message) {
+            const errorContainer = document.getElementById('error-container');
+            if (errorContainer) {
+                errorContainer.textContent = message;
+                errorContainer.style.display = 'block';
+            }
+        }
 
         function closeApplication() {
             window.close();
@@ -242,5 +161,4 @@
         window.onload = startMonitoring;
     </script>
 </body>
-
 </html>

@@ -25,6 +25,10 @@ y tú eres su {relacion_cuidador} llamado {nombre_cuidador}.
 """
 dynamic_context = initial_context
 
+# Claves API y ID de voz directamente en el código (no recomendado para producción)
+XI_API_KEY = "2862eb12cfab205544b5096b0ccd560d"
+VOICE_ID = "4r2FcmxcEjuesUkkRSgw"
+
 @app.route('/')
 def index():
     uid = request.args.get('uid', default='', type=str)
@@ -40,22 +44,28 @@ def upload_audio() -> Union[Response, Tuple[Response, int]]:
         return jsonify({'error': 'No valid audio file provided or file format not supported'}), 400
 
     audio_file = request.files['audio']
-    page_load_count = request.form.get('pageLoadCount', 'default_session')  
-
     original_path, converted_path = funciones.save_and_convert_audio(audio_file)
     if original_path is None or converted_path is None:
+        logging.error("Failed to convert the audio.")
         return jsonify({'error': 'Failed to convert the audio'}), 500
 
     text, error_details = funciones.transcribe_audio(converted_path)
     if text is None:
+        logging.error(f"Transcription failed: {error_details}")
         return jsonify(error_details), 500
 
-    result, status = funciones.process_recognition(text, dynamic_context, llama, page_load_count, original_path, converted_path)
-    if status == 200:
-        dynamic_context = result['updated_context']  
-        return jsonify(result['response']), 200
-    else:
+    result, status = funciones.process_recognition(text, dynamic_context, llama, "your_session_id_here", original_path, converted_path)
+    if status != 200:
+        logging.error(f"Processing recognition failed: {result}")
         return jsonify(result['response']), result.get('status_code', 500)
+
+    dynamic_context = result['updated_context']
+    synthesized_audio, error = funciones.synthesize_text_with_elevenlabs(result['response']['llama_response'], VOICE_ID, XI_API_KEY)
+    if synthesized_audio:
+        return Response(synthesized_audio, mimetype='audio/mp3')
+    else:
+        logging.error(f"Failed to synthesize speech: {error}")
+        return jsonify(error), 500
 
 if __name__ == '__main__':
     app.run(debug=True)
