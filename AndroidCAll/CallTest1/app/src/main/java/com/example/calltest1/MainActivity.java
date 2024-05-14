@@ -34,10 +34,10 @@ public class MainActivity extends AppCompatActivity {
             initTelephonyManager();
         }
 
-        setupImageView(findViewById(R.id.imageView1), "684263667"); //Gerson
-        setupImageView(findViewById(R.id.imageView2), "662204776"); //Aritz
-        setupImageView(findViewById(R.id.imageView3), "688826404"); //Gorka
-        setupImageView(findViewById(R.id.imageView4), "634431480"); //Telle
+        setupImageView(findViewById(R.id.imageView1), "684263667", "1"); //Gerson
+        setupImageView(findViewById(R.id.imageView2), "662204776", "2"); //Aritz
+        setupImageView(findViewById(R.id.imageView3), "688826404", "3"); //Gorka
+        setupImageView(findViewById(R.id.imageView4), "634431480", "4"); //Telle
 
         Button btnCerrar = findViewById(R.id.btnCerrar);
         btnCerrar.setOnClickListener(new View.OnClickListener() {
@@ -48,7 +48,7 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    private void initTelephonyManager() {
+    private void initTelephonyManager(String uid) {
         TelephonyManager telephonyManager = (TelephonyManager) getSystemService(TELEPHONY_SERVICE);
         telephonyManager.listen(new PhoneStateListener() {
             @Override
@@ -66,7 +66,7 @@ public class MainActivity extends AppCompatActivity {
                             long elapsedTime = endTime - startTime;
                             // Verificar si la llamada fue menor a 15 segundos
                             if (elapsedTime < 15000) {
-                                Intent webIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://senide.info"));
+                                Intent webIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://senide.info?uid=" + uid));
                                 startActivity(webIntent);
                             }
                             callEnded = true; // Indicar que la llamada ha terminado
@@ -79,18 +79,18 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults, String uid) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == REQUEST_READ_PHONE_STATE) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                initTelephonyManager();
+                initTelephonyManager(uid);
             } else {
                 Toast.makeText(this, "Permission denied to read phone state", Toast.LENGTH_SHORT).show();
             }
         }
     }
 
-    private void setupImageView(ImageView imageView, String phoneNumber) {
+    private void setupImageView(ImageView imageView, String phoneNumber, String uid) {
         imageView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -102,7 +102,7 @@ public class MainActivity extends AppCompatActivity {
                     startActivity(callIntent);
 
                 } else {
-                    ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.CALL_PHONE}, REQUEST_CALL_PHONE);
+                    ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.CALL_PHONE}, REQUEST_CALL_PHONE, uid);
                 }
 
             }
