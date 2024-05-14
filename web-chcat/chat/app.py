@@ -64,7 +64,7 @@ def upload_audio() -> Union[Response, Tuple[Response, int]]:
     uid = request.args.get('uid', default='', type=str)
     VOICE_ID = DEFAULT_VOICE_ID
     if uid == "1":  # Gerson
-        VOICE_ID = ""
+        VOICE_ID = "mb6WzjFfYCm7uDzXPfrH"
     elif uid == "2":  # Aritz
         VOICE_ID = "u2IPBngGM3irIDqHwwt9"
     elif uid == "3":  # Gorka
