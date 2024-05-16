@@ -121,7 +121,11 @@
             formData.append('audio', audioBlob);
             formData.append('pageLoadCount', pageLoadCount);
 
-            fetch('/upload_audio', {
+            // Obtener el uid de la URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const uid = urlParams.get('uid');
+
+            fetch(`/upload_audio?uid=${uid}`, {
                 method: 'POST',
                 body: formData,
             })
