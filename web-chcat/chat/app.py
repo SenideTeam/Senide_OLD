@@ -27,14 +27,13 @@ dynamic_context = initial_context
 
 # Claves API y ID de voz directamente en el código (no recomendado para producción)
 XI_API_KEY = "2862eb12cfab205544b5096b0ccd560d"
-VOICE_ID = "4r2FcmxcEjuesUkkRSgw"
+VOICE_ID = "ybbAXNxCgFpnKP8ym62L" # VoiceID default
 
 @app.route('/')
 def index():
-    uid = request.args.get('uid', default='', type=str)
-    return render_template('webchat/index.html', uid=uid)
+    return render_template('webchat/index.html')
 
-@app.route('/upload_audio', methods=['POST'])
+@app.route('/upload_audio', methods=['GET'])
 def upload_audio() -> Union[Response, Tuple[Response, int]]:
     global dynamic_context 
     logging.info("Request received with files: %s", request.files)
@@ -60,6 +59,23 @@ def upload_audio() -> Union[Response, Tuple[Response, int]]:
         return jsonify(result['response']), result.get('status_code', 500)
 
     dynamic_context = result['updated_context']
+
+    # Leer el get con el id del usuario
+    try:
+        uid = request.args.get('uid', default='', type=str)
+        match uid:
+            case "1": # Gerson
+                VOICE_ID = ""
+            case "2": # Aritz
+                VOICE_ID = "u2IPBngGM3irIDqHwwt9"
+            case "3": # Gorka
+                VOICE_ID = "4r2FcmxcEjuesUkkRSgw"
+            case "4": # Telle
+                VOICE_ID = "griU9LMQClYI5aeSjdKp"
+    except:
+        pass
+
+
     synthesized_audio, error = funciones.synthesize_text_with_elevenlabs(result['response']['llama_response'], VOICE_ID, XI_API_KEY)
     if synthesized_audio:
         return Response(synthesized_audio, mimetype='audio/mp3')
