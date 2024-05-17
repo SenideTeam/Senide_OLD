@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Grabadora de Audio</title>
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        #error-container {
+            color: red;
+            margin-top: 10px;
+            font-weight: bold;
+            display: none; /* Oculto por defecto */
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-5">
+        <h1>Grabadora de Audio Automática</h1>
+        <p>La grabación empezará automáticamente...</p>
+        <button id="closeButton" class="btn btn-danger mt-3">Cerrar Aplicación</button>
+        <button id="exitButton" class="btn btn-secondary mt-3">Salir</button>
+        <div id="error-container"></div>
+    </div>
+
+    <script>
+        let mediaRecorder;
+        let audioChunks = [];
+        let audioContext;
+        let audioInput;
+        let realTimeAnalyser;
+        let isRecording = false;
+        let lastTimeAboveThreshold = Date.now();
+        const silenceThreshold = 0.1; // Umbral de silencio
+        const silenceTime = 3300; // Tiempo en ms para considerar que el silencio significa fin de habla
+        let isSpeaking = false; // Estado de la reproducción de voz
+
+        function updatePageLoadCount() {
+            let count = localStorage.getItem('pageLoadCount');
+            count = count ? parseInt(count) + 1 : 1;
+            localStorage.setItem('pageLoadCount', count);
+            return count;
+        }
+
+        let pageLoadCount = updatePageLoadCount();
+        console.log('Número de cargas de página:', pageLoadCount);
+
+        function startMonitoring() {
+            navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
+                if (!audioContext) {
+                    audioContext = new AudioContext();
+                    audioInput = audioContext.createMediaStreamSource(stream);
+                    realTimeAnalyser = audioContext.createAnalyser();
+                    realTimeAnalyser.fftSize = 512;
+                    audioInput.connect(realTimeAnalyser);
+                }
+
+                checkAudio();
+
+                if (!mediaRecorder) {
+                    if (MediaRecorder.isTypeSupported('audio/webm;codecs=opus')) {
+                        mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm;codecs=opus' });
+                    } else {
+                        console.error('Formato audio/webm;codecs=opus no soportado');
+                        return;
+                    }
+                    mediaRecorder.ondataavailable = e => {
+                        if (e.data.size > 0 && isRecording) {
+                            audioChunks.push(e.data);
+                        }
+                    };
+                    mediaRecorder.onstop = () => {
+                        processAudioChunks();
+                    };
+                }
+            }).catch(error => {
+                console.error("Error al acceder a los dispositivos multimedia.", error);
+                displayErrorToUser("Error accessing media devices: " + error.message);
+            });
+        }
+
+        function checkAudio() {
+            if (isSpeaking) return;
+            const bufferLength = realTimeAnalyser.frequencyBinCount;
+            const dataArray = new Uint8Array(bufferLength);
+            realTimeAnalyser.getByteTimeDomainData(dataArray);
+
+            let sum = 0;
+            for (let i = 0; i < bufferLength; i++) {
+                const x = (dataArray[i] - 128) / 128.0;
+                sum += x * x;
+            }
+            const rms = Math.sqrt(sum / bufferLength);
+
+            if (rms > silenceThreshold && !isSpeaking) {
+                lastTimeAboveThreshold = Date.now();
+                if (!isRecording) {
+                    isRecording = true;
+                    audioChunks = [];
+                    mediaRecorder.start(1000);
+                }
+            } else if (isRecording && (Date.now() - lastTimeAboveThreshold > silenceTime)) {
+                isRecording = false;
+                mediaRecorder.stop();
+            }
+
+            requestAnimationFrame(checkAudio);
+        }
+
+        function processAudioChunks() {
+            const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+            if (audioBlob.size > 0) {
+                sendAudioToServer(audioBlob);
+            } else {
+                console.error('No hay datos para enviar.');
+                displayErrorToUser('No data to send.');
+            }
+        }
+
+        function sendAudioToServer(audioBlob) {
+            const formData = new FormData();
+            formData.append('audio', audioBlob);
+            formData.append('pageLoadCount', pageLoadCount);
+
+            // Obtener el uid de la URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const uid = urlParams.get('uid');
+
+            fetch(`/upload_audio?uid=${uid}`, {
+                method: 'POST',
+                body: formData,
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Failed to load response from server. Status: ' + response.status);
+                }
+                return response.blob();
+            })
+            .then(blob => {
+                const audioUrl = URL.createObjectURL(blob);
+                const audio = new Audio(audioUrl);
+                audio.play();
+                audio.onended = () => {
+                    URL.revokeObjectURL(audioUrl);
+                };
+            })
+            .catch(error => {
+                console.error('Error processing audio:', error);
+                displayErrorToUser('Error processing audio: ' + error.message);
+            });
+        }
+
+        function displayErrorToUser(message) {
+            const errorContainer = document.getElementById('error-container');
+            if (errorContainer) {
+                errorContainer.textContent = message;
+                errorContainer.style.display = 'block';
+            }
+        }
+
+        function closeApplication() {
+            window.close();
+        }
+
+        document.getElementById('closeButton').addEventListener('click', closeApplication);
+        window.onload = startMonitoring;
+    </script>
+</body>
+</html>
