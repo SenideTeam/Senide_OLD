@@ -1,4 +1,4 @@
-www.senide.inf{
+www.senide.info{
     redir https://senide.info {uri}
 }
 
