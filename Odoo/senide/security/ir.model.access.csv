@@ -1,6 +1,0 @@
-id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
-access_senide_usuario_admin,senide.usuario.admin,model_senide_usuario,senide.group_senide_admin,1,1,1,1
-access_senide_cuidador_admin,senide.cuidador.admin,model_senide_cuidador,senide.group_senide_admin,1,1,1,1
-access_senide_asociado_admin,senide.asociado.admin,model_senide_asociado,senide.group_senide_admin,1,1,1,1
-access_senide_llamadas_admin,senide.llamadas.admin,model_senide_llamadas,senide.group_senide_admin,1,1,1,1
-access_senide_transcripcion_admin,senide.cuidador.admin,model_senide_transcripcion,senide.group_senide_admin,1,1,1,1
